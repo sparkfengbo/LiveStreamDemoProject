@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <com.sparkfengbo.ng.livestreamdemoproject.CameraRecorder
+            android:id="@+id/camera_preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="20dp">
+        <Button
+                android:id="@+id/btn_turn_around"
+                android:layout_height="40dp"
+                android:layout_width="80dp"
+                android:background="@color/button_bg"
+                android:text="翻转"
+                />
+
+        <Button
+                android:id="@+id/btn_lignts"
+                android:layout_height="40dp"
+                android:layout_width="80dp"
+                android:background="@color/button_bg"
+                android:text="闪光灯"
+                android:layout_marginTop="10dp"
+                />
+        <Button
+                android:id="@+id/btn_push_live"
+                android:layout_height="40dp"
+                android:layout_width="80dp"
+                android:background="@color/button_bg"
+                android:text="推流"
+                android:layout_marginTop="10dp"
+                />
+    </LinearLayout>
+
+    <TextView
+            android:id="@+id/push_info"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"/>
+</RelativeLayout>
+
