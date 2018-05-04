@@ -1,3 +1,10 @@
+
+
+
+**本demo是基于ffmpeg、x264、rtmp库，编译并移植到android中，完成能够进行直播的demo，通过本demo及相关的文档，你能学习到直播所需的基础知识**
+
+
+
 ### 步骤1：下载
 
 **版本**： [FFmpeg 3.0.11 "Einstein"](http://ffmpeg.org/download.html#releases)
@@ -23,10 +30,6 @@
 ### 步骤4：验证ffmpeg已打进APK中
 
 
-
-
-
-[fmpeg中第三方库的编译_libx264和librtmp
-](https://blog.csdn.net/jiandanjiuhao_88/article/details/54694029)
+[fmpeg中第三方库的编译_libx264和librtmp](https://blog.csdn.net/jiandanjiuhao_88/article/details/54694029)
 
 [编译Android下可用的全平台FFmpeg(包含libx264与libfdk-aac)](https://blog.csdn.net/mabeijianxi/article/details/74544879)

@@ -45,7 +45,9 @@ cmake_minimum_required(VERSION 3.4.1)
 # 设置cpp目录路径
 set(CPP_DIR ${CMAKE_SOURCE_DIR}/src/main/cpp)
 
-include_directories(${CPP_DIR}/include)
+include_directories(
+            ${CMAKE_SOURCE_DIR}/ffmpeg-3.0.11/
+            ${CPP_DIR}/include/)
 
 
 find_library(log-lib log)
@@ -61,7 +63,7 @@ add_library( # 库名称
              ${CPP_DIR}/ffmpeg.c
              ${CPP_DIR}/ffmpeg_filter.c
              ${CPP_DIR}/ffmpeg_opt.c
-             ${CPP_DIR}/ffmpeg_cmd.cpp )
+             ${CPP_DIR}/ffmpeg_cmd.c )
 
 add_library(avcodec-57
                 SHARED

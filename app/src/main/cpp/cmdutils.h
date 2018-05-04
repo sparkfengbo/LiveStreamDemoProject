@@ -185,7 +185,7 @@ typedef struct OptionDef {
 #define OPT_DOUBLE 0x20000
 #define OPT_INPUT  0x40000
 #define OPT_OUTPUT 0x80000
-     union {
+    union {
         void *dst_ptr;
         int (*func_arg)(void *, const char *, const char *);
         size_t off;

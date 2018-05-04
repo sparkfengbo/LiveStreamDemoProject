@@ -104,7 +104,25 @@ public class RecorderManager {
     }
 
 
-    private native void run();
+    /**
+     * 以空格分割指令，生成String类型的数组
+     *
+     * @param cmd 指令
+     * @return 执行code
+     */
+    public int cmdRun(String cmd) {
+        String regulation = "[ \\t]+";
+        final String[] split = cmd.split(regulation);
+        return run(split);
+    }
+
+    /**
+     * ffmpeg_cmd中定义的run方法
+     *
+     * @param cmd 指令
+     * @return 执行code
+     */
+    public native int run(String[] cmd);
     public native long sendPCMData(byte[] data);
 
 }

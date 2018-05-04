@@ -2,11 +2,14 @@ package com.sparkfengbo.ng.livestreamdemoproject;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
+
+import java.io.File;
 
 public class PreviewActivity extends Activity {
     /**
@@ -23,6 +26,12 @@ public class PreviewActivity extends Activity {
      * 开始/结束推流
      */
     private Button mBtnPushLive;
+
+    /**
+     * 转GIF
+     */
+    private Button mBtnConvertGif;
+
 
     /**
      * 推流或展示其他信息
@@ -51,10 +60,12 @@ public class PreviewActivity extends Activity {
         mBtnPushLive = (Button) findViewById(R.id.btn_push_live);
         mCameraRecorder = (CameraRecorder) findViewById(R.id.camera_preview);
         mPushInfoTextView = (TextView) findViewById(R.id.push_info);
+        mBtnConvertGif = (Button) findViewById(R.id.btn_convert_gift);
 
         mBtnTurnAround.setOnClickListener(mOnClickListener);
         mBtnLignts.setOnClickListener(mOnClickListener);
         mBtnPushLive.setOnClickListener(mOnClickListener);
+        mBtnConvertGif.setOnClickListener(mOnClickListener);
 
         mRecorderManager = new RecorderManager(mCameraRecorder);
     }
@@ -73,7 +84,39 @@ public class PreviewActivity extends Activity {
                 //TODO 开始推流
                 //TODO 摄像头翻转后的推流
                 mRecorderManager.startLivePush();
+            } else if (view == mBtnConvertGif) {
+
+                if (mRecorderManager == null) {
+                    return;
+                }
+                /**
+                 * 首先确保你的路径正确
+                 *
+                 * 我的测试路径    /sdcard/DCIM/Camera/VID_20180504_133613.mp4
+                 *
+                 */
+                String path = Environment.getExternalStorageDirectory().getAbsolutePath()
+                        + "/DCIM/Camera/";
+
+                final String source = "VID_20180504_133613.mp4";
+
+                final String dest = "test.gift";
+
+                File file = new File(path);
+                if (!file.exists()) {
+                    Mlog.e("File path = " + path + " not  exits");
+                    return;
+                }
+
+                final String cmd = "ffmpeg -i " + path + source + " -vframes 100 -y -f gif -s 480×320 " + path + dest;
+
+                int a  = mRecorderManager.cmdRun(cmd);
+                Mlog.e("执行命令" + a + "");
             }
         }
     };
+
+
+
+
 }
