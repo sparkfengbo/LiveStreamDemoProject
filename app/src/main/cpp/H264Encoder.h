@@ -1,0 +1,20 @@
+//
+// Created by fengbo on 2018/5/9.
+//
+
+#ifndef LIVESTREAMDEMOPROJECT_H264ENCODER_H
+#define LIVESTREAMDEMOPROJECT_H264ENCODER_H
+
+extern "C" {
+
+
+}
+class H264Encoder {
+
+
+
+
+};
+
+
+#endif //LIVESTREAMDEMOPROJECT_H264ENCODER_H

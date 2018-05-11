@@ -46,14 +46,70 @@ cmake_minimum_required(VERSION 3.4.1)
 set(CPP_DIR ${CMAKE_SOURCE_DIR}/src/main/cpp)
 
 include_directories(
-            ${CMAKE_SOURCE_DIR}/ffmpeg-3.0.11/
+            ${CMAKE_SOURCE_DIR}/ffmpeg-3.3.7/
             ${CPP_DIR}/include/)
 
 
 find_library(log-lib log)
 
+
+add_library(avcodec
+                SHARED
+                IMPORTED)
+
+set_target_properties(avcodec
+                        PROPERTIES
+                        IMPORTED_LOCATION
+                        ${CMAKE_SOURCE_DIR}/libs/armeabi/libavcodec.so)
+
+add_library(avfilter
+                SHARED
+                IMPORTED)
+
+set_target_properties(avfilter
+                        PROPERTIES
+                        IMPORTED_LOCATION
+                        ${CMAKE_SOURCE_DIR}/libs/armeabi/libavfilter.so)
+
+add_library(avformat
+                SHARED
+                IMPORTED)
+
+set_target_properties(avformat
+                        PROPERTIES
+                        IMPORTED_LOCATION
+                        ${CMAKE_SOURCE_DIR}/libs/armeabi/libavformat.so)
+
+add_library(avutil
+                SHARED
+                IMPORTED)
+
+set_target_properties(avutil
+                        PROPERTIES
+                        IMPORTED_LOCATION
+                        ${CMAKE_SOURCE_DIR}/libs/armeabi/libavutil.so)
+
+add_library(swresample
+                SHARED
+                IMPORTED)
+
+set_target_properties(swresample
+                        PROPERTIES
+                        IMPORTED_LOCATION
+                        ${CMAKE_SOURCE_DIR}/libs/armeabi/libswresample.so)
+
+add_library(swscale
+                SHARED
+                IMPORTED)
+
+set_target_properties(swscale
+                        PROPERTIES
+                        IMPORTED_LOCATION
+                        ${CMAKE_SOURCE_DIR}/libs/armeabi/libswscale.so)
+
+
 add_library( # 库名称
-             ffmpeg
+             record_util
 
              # 动态库，生成so文件
              SHARED
@@ -63,68 +119,21 @@ add_library( # 库名称
              ${CPP_DIR}/ffmpeg.c
              ${CPP_DIR}/ffmpeg_filter.c
              ${CPP_DIR}/ffmpeg_opt.c
-             ${CPP_DIR}/ffmpeg_cmd.c )
+             ${CPP_DIR}/RecordUtil.cpp
+             ${CPP_DIR}/AACEncoder.cpp
+             ${CPP_DIR}/H264Encoder.cpp
+              )
 
-add_library(avcodec-57
-                SHARED
-                IMPORTED)
 
-set_target_properties(avcodec-57
-                        PROPERTIES
-                        IMPORTED_LOCATION
-                        ${CMAKE_SOURCE_DIR}/libs/armeabi/libavcodec-57.so)
 
-add_library(avfilter-6
-                SHARED
-                IMPORTED)
-
-set_target_properties(avfilter-6
-                        PROPERTIES
-                        IMPORTED_LOCATION
-                        ${CMAKE_SOURCE_DIR}/libs/armeabi/libavfilter-6.so)
-
-add_library(avformat-57
-                SHARED
-                IMPORTED)
-
-set_target_properties(avformat-57
-                        PROPERTIES
-                        IMPORTED_LOCATION
-                        ${CMAKE_SOURCE_DIR}/libs/armeabi/libavformat-57.so)
-
-add_library(avutil-55
-                SHARED
-                IMPORTED)
-
-set_target_properties(avutil-55
-                        PROPERTIES
-                        IMPORTED_LOCATION
-                        ${CMAKE_SOURCE_DIR}/libs/armeabi/libavutil-55.so)
-
-add_library(swresample-2
-                SHARED
-                IMPORTED)
-
-set_target_properties(swresample-2
-                        PROPERTIES
-                        IMPORTED_LOCATION
-                        ${CMAKE_SOURCE_DIR}/libs/armeabi/libswresample-2.so)
-
-add_library(swscale-4
-                SHARED
-                IMPORTED)
-
-set_target_properties(swscale-4
-                        PROPERTIES
-                        IMPORTED_LOCATION
-                        ${CMAKE_SOURCE_DIR}/libs/armeabi/libswscale-4.so)
 
 target_link_libraries(
-                       ffmpeg
-                       avcodec-57
-                       avfilter-6
-                       avformat-57
-                       avutil-55
-                       swresample-2
-                       swscale-4
+                       record_util
+                       avcodec
+                       avfilter
+                       avformat
+                       avutil
+                       swresample
+                       swscale
+
                        ${log-lib} )

@@ -38,10 +38,17 @@ public class PreviewActivity extends Activity {
      */
     private TextView mPushInfoTextView;
 
+
+    private Button mBtnRecordAAC;
+
+    private Button mBtnStopAAC;
+
+
+
     /**
      * 摄像头预览和采集
      */
-    private CameraRecorder mCameraRecorder;
+    private CameraPreview mCameraRecorder;
 
     private RecorderManager mRecorderManager;
 
@@ -58,14 +65,20 @@ public class PreviewActivity extends Activity {
         mBtnTurnAround = (Button) findViewById(R.id.btn_turn_around);
         mBtnLignts = (Button) findViewById(R.id.btn_lignts);
         mBtnPushLive = (Button) findViewById(R.id.btn_push_live);
-        mCameraRecorder = (CameraRecorder) findViewById(R.id.camera_preview);
+        mCameraRecorder = (CameraPreview) findViewById(R.id.camera_preview);
         mPushInfoTextView = (TextView) findViewById(R.id.push_info);
         mBtnConvertGif = (Button) findViewById(R.id.btn_convert_gift);
+        mBtnRecordAAC = (Button) findViewById(R.id.btn_record_aac);
+
+        mBtnStopAAC = (Button) findViewById(R.id.btn_stop_aac);
 
         mBtnTurnAround.setOnClickListener(mOnClickListener);
         mBtnLignts.setOnClickListener(mOnClickListener);
         mBtnPushLive.setOnClickListener(mOnClickListener);
         mBtnConvertGif.setOnClickListener(mOnClickListener);
+        mBtnRecordAAC.setOnClickListener(mOnClickListener);
+
+        mBtnStopAAC.setOnClickListener(mOnClickListener);
 
         mRecorderManager = new RecorderManager(mCameraRecorder);
     }
@@ -74,7 +87,6 @@ public class PreviewActivity extends Activity {
         @Override
         public void onClick(View view) {
             if (view == mBtnTurnAround) {
-                //TODO 摄像头翻转
                 if (mCameraRecorder != null) {
                     mCameraRecorder.switchCamera();
                 }
@@ -85,7 +97,7 @@ public class PreviewActivity extends Activity {
                 //TODO 摄像头翻转后的推流
                 mRecorderManager.startLivePush();
             } else if (view == mBtnConvertGif) {
-
+                //参考文章 https://blog.csdn.net/kong_gu_you_lan/article/details/79707513
                 if (mRecorderManager == null) {
                     return;
                 }
@@ -104,19 +116,22 @@ public class PreviewActivity extends Activity {
 
                 File file = new File(path);
                 if (!file.exists()) {
-                    Mlog.e("File path = " + path + " not  exits");
+                    Mog.e("File path = " + path + " not  exits");
                     return;
                 }
 
                 final String cmd = "ffmpeg -i " + path + source + " -vframes 100 -y -f gif -s 480×320 " + path + dest;
 
                 int a  = mRecorderManager.cmdRun(cmd);
-                Mlog.e("执行命令" + a + "");
+                Mog.i("执行命令" + a + "");
+            } else if (view == mBtnRecordAAC) {
+                String path = Environment.getExternalStorageDirectory().getAbsolutePath();
+                mRecorderManager.startRecordAAC();
+            } else if (view ==mBtnStopAAC) {
+                mRecorderManager.stopAAC();
+
             }
         }
     };
-
-
-
 
 }

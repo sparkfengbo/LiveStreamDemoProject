@@ -25,10 +25,12 @@
 #include <stdint.h>
 
 #include "config.h"
+
 #include "libavcodec/avcodec.h"
 #include "libavfilter/avfilter.h"
 #include "libavformat/avformat.h"
 #include "libswscale/swscale.h"
+
 
 #ifdef _WIN32
 #undef main /* We don't want SDL to override our main() */
@@ -59,7 +61,7 @@ void register_exit(void (*cb)(int ret));
 /**
  * Wraps exit with a program-specific cleanup routine.
  */
-int exit_program(int ret);
+int exit_program(int ret) ;
 
 /**
  * Initialize dynamic library loading
@@ -185,7 +187,7 @@ typedef struct OptionDef {
 #define OPT_DOUBLE 0x20000
 #define OPT_INPUT  0x40000
 #define OPT_OUTPUT 0x80000
-    union {
+     union {
         void *dst_ptr;
         int (*func_arg)(void *, const char *, const char *);
         size_t off;
@@ -210,7 +212,7 @@ void show_help_options(const OptionDef *options, const char *msg, int req_flags,
  * Show help for all options with given flags in class and all its
  * children.
  */
-void show_help_children(const AVClass *class, int flags);
+void show_help_children(const AVClass *avClass, int flags);
 
 /**
  * Per-fftool specific help handler. Implemented in each
@@ -442,6 +444,20 @@ int show_license(void *optctx, const char *opt, const char *arg);
 int show_formats(void *optctx, const char *opt, const char *arg);
 
 /**
+ * Print a listing containing all the muxers supported by the
+ * program (including devices).
+ * This option processing function does not utilize the arguments.
+ */
+int show_muxers(void *optctx, const char *opt, const char *arg);
+
+/**
+ * Print a listing containing all the demuxer supported by the
+ * program (including devices).
+ * This option processing function does not utilize the arguments.
+ */
+int show_demuxers(void *optctx, const char *opt, const char *arg);
+
+/**
  * Print a listing containing all the devices supported by the
  * program.
  * This option processing function does not utilize the arguments.
@@ -584,7 +600,7 @@ void *grow_array(void *array, int elem_size, int *size, int new_size);
 
 #define GET_CH_LAYOUT_NAME(ch_layout)\
     char name[16];\
-    snprintf(name, sizeof(name), "0x%"PRIx64, ch_layout);
+    snprintf(name, sizeof(name), "0x%" PRIx64, ch_layout);
 
 #define GET_CH_LAYOUT_DESC(ch_layout)\
     char name[128];\
