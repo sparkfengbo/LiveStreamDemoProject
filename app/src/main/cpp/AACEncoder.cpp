@@ -53,7 +53,7 @@ int AACEncoder::initAAEncoder() {
     pFormatCtx->oformat = fmt;
 
     if (avio_open(&pFormatCtx->pb, outfile, AVIO_FLAG_READ_WRITE) < 0) {
-        LOGE("Failed to open output file!\n");
+        LOGE("Failed to open audio output file!");
         return -1;
     }
 
@@ -68,6 +68,7 @@ int AACEncoder::initAAEncoder() {
 
 //    pCodec = avcodec_find_encoder(AV_CODEC_ID_AAC);
 
+    //指定libfdk_aac进行编码
     pCodec = avcodec_find_encoder_by_name("libfdk_aac");
     if (!pCodec) {
         LOGE("error find audio encoder");
@@ -82,7 +83,8 @@ int AACEncoder::initAAEncoder() {
     * 所以需要使用avcodec_find_encoder_by_name("libfdk_aac")指定为fdk_aac编码器
     * 如果使用ffmepg默认的aac编码器，可以使用SwrContext将AV_SAMPLE_FMT_FLTP转换成AV_SAMPLE_FMT_S16
     */
-    pCodecCtx = avcodec_alloc_context3(pCodec);
+
+    pCodecCtx = avcodec_alloc_context3(pCodec); //或者使用pCodecCtx = audio_st->codec;也可以
     pCodecCtx->codec_id = AV_CODEC_ID_AAC;
     pCodecCtx->codec_type = AVMEDIA_TYPE_AUDIO;
     pCodecCtx->sample_fmt = AV_SAMPLE_FMT_S16;
@@ -145,7 +147,7 @@ int AACEncoder::flush_encoder(AVFormatContext *fmt_context, unsigned int stream_
 
         ret = avcodec_encode_audio2(pCodecCtx, &end_pkt, NULL, &got_frame);
 
-        av_frame_free(NULL);
+//        av_frame_free(NULL);
 
         if (ret < 0) {
             break;
@@ -175,6 +177,7 @@ void AACEncoder::endEncoder() {
     int ret = flush_encoder(pFormatCtx, 0);
     if (ret < 0) {
         LOGE("flush audio encoder fail!");
+        return;
     }
     av_write_trailer(pFormatCtx);
 
@@ -214,15 +217,15 @@ void *AACEncoder::startEncode(void *obj) {
 
         LOGI("frame_queue pts : %d" , aac_encoder->pts);
 
-        aac_encoder->got_frame = 0;
+        int got_frame = 0;
 
-        int ret = avcodec_encode_audio2(aac_encoder->pCodecCtx, &aac_encoder->pkt, aac_encoder->pFrame, &aac_encoder->got_frame);
+        int ret = avcodec_encode_audio2(aac_encoder->pCodecCtx, &aac_encoder->pkt, aac_encoder->pFrame, &got_frame);
 
         if (ret < 0) {
             LOGE("Fail encode audio!");
         }
 
-        if (aac_encoder->got_frame == 1) {
+        if (got_frame == 1) {
             aac_encoder->pkt.stream_index = aac_encoder->audio_st->index;
             ret = av_write_frame(aac_encoder->pFormatCtx, &aac_encoder->pkt);
             av_free_packet(&aac_encoder->pkt);

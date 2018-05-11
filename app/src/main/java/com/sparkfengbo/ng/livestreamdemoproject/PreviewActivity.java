@@ -112,7 +112,7 @@ public class PreviewActivity extends Activity {
 
                 final String source = "VID_20180504_133613.mp4";
 
-                final String dest = "test.gift";
+                final String dest = "test.gif";
 
                 File file = new File(path);
                 if (!file.exists()) {

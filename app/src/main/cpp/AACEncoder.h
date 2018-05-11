@@ -21,8 +21,6 @@ private:
     threadsafe_queue<uint8_t *> frame_queue;
     //用于标记编码后的帧的顺序
     int pts;
-    //编码帧后的到的帧数
-    int got_frame;
     //每帧大小
     int frame_size;
 

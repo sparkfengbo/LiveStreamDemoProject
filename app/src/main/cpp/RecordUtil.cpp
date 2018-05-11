@@ -57,20 +57,19 @@ Java_com_sparkfengbo_ng_livestreamdemoproject_RecorderManager_run(JNIEnv *env, j
         argv[i] = (char *) env->GetStringUTFChars(js, 0);
     }
 
-    return run(argc, argv);
+    int ret = run(argc, argv);
+    LOGI("run method returns %d", ret);
+    return ret;
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_sparkfengbo_ng_livestreamdemoproject_RecorderManager_initAACEncoder(JNIEnv *env, jobject instance) {
-    struct RecordConfig config = {
-            NULL,
-            NULL,
-            64000,
-            44100,
-            "/sdcard/DCIM/test.aac"
-    };
-    audioEncoder = new AACEncoder(&config);
+    RecordConfig *config = new RecordConfig();
+    config->audio_bit_rate = 64000;
+    config->audio_path = "/sdcard/DCIM/test.aac";
+    config->audio_sample_rate = 44100;
+    audioEncoder = new AACEncoder(config);
     audioEncoder->initAAEncoder();
 }
 
