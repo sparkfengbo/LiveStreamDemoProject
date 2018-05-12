@@ -46,7 +46,7 @@ cmake_minimum_required(VERSION 3.4.1)
 set(CPP_DIR ${CMAKE_SOURCE_DIR}/src/main/cpp)
 
 include_directories(
-            ${CMAKE_SOURCE_DIR}/ffmpeg-3.3.7/
+            ${CMAKE_SOURCE_DIR}/ffmpeg-3.0.11/
             ${CPP_DIR}/include/)
 
 
