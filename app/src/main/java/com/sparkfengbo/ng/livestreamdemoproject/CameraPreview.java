@@ -1,5 +1,7 @@
 package com.sparkfengbo.ng.livestreamdemoproject;
 
+import com.sparkfengbo.ng.livestreamdemoproject.util.Mog;
+
 import android.content.Context;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
@@ -12,6 +14,8 @@ import java.util.List;
 
 /**
  * Created by fengbo on 2018/5/2.
+ *
+ * 摄像头预览画面
  */
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback{
@@ -96,6 +100,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
 
         Camera.Parameters parameters = camera.getParameters();
+
         //default is NV21
         parameters.setPreviewFormat(ImageFormat.YV12);
 
@@ -103,6 +108,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         Camera.Size optimalSize = getOptimalPreviewSize(sizes, getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
 
         parameters.setPreviewSize(optimalSize.width, optimalSize.height);
+
+        Mog.i("width : " + optimalSize.width + "   height : "  +optimalSize.height);
         camera.setParameters(parameters);
 
         camera.setPreviewCallback(mPreviewCallback);
@@ -148,9 +155,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private Camera.PreviewCallback mPreviewCallback = new Camera.PreviewCallback() {
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
-//            Mlog.e("receive buffer data " + "\n data.length : "+ data.length +
-//               "   data: "  + data.toString());
-
+            Mog.d("" + data.length);
             if(mOnFrameDataCallback != null) {
                 mOnFrameDataCallback.onFrameData(data, data.length, mRotate);
             }
@@ -186,14 +191,14 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void setCallback(OnFrameDataCallback callback) {
-
+        mOnFrameDataCallback = callback;
     }
 
     interface OnFrameDataCallback {
         void onFrameData(byte[] data, int length, int rotate);
     }
 
-    public void onRelease () {
+    public void release () {
         if(mCamera != null) {
             mCamera.stopPreview();
             mCamera.release();

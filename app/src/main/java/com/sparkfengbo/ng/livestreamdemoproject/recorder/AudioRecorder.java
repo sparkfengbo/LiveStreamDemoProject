@@ -1,38 +1,17 @@
 package com.sparkfengbo.ng.livestreamdemoproject.recorder;
 
-import com.sparkfengbo.ng.livestreamdemoproject.Mog;
+import com.sparkfengbo.ng.livestreamdemoproject.util.Mog;
 
-import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
-import android.view.MotionEvent;
 
 /**
  * Created by fengbo on 2018/5/2.
+ *
+ * 音频录音
  */
 
 public class AudioRecorder {
-    /**
-     * 音频采样率
-     */
-    public static final int AUDIO_FREQUENCY = 44100;
-
-    /**
-     * 音频数据格式
-     */
-    public static final int AUDIO_FORMAT_BIT = AudioFormat.ENCODING_PCM_16BIT;
-
-    /**
-     * 音频播放声道
-     */
-    public static final int AUDIO_FORMAT_CHANNEL_FOR_PLAY = AudioFormat.CHANNEL_OUT_MONO;
-
-    /**
-     * 音频录制声道
-     */
-    public static final int AUDIO_FORMAT_CHANNEL_FOR_RECORD = AudioFormat.CHANNEL_IN_MONO;
-
-
     private static final int BUFFER_LENGTH = 2048;
 
     private byte[] mBuffer;
@@ -45,21 +24,25 @@ public class AudioRecorder {
 
     private void init () {
         Mog.i("init AudioRecorder");
+        int bufferSize = AudioRecord.getMinBufferSize(RecordConfig.AUDIO_SAMPLE_RATE,
+                RecordConfig.AUDIO_FORMAT_CHANNEL_FOR_RECORD,
+                RecordConfig.AUDIO_FORMAT_BIT);
 
-        int bufferSize = AudioRecord.getMinBufferSize(AUDIO_FREQUENCY, AUDIO_FORMAT_CHANNEL_FOR_RECORD, AUDIO_FORMAT_BIT);
+        mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
+                RecordConfig.AUDIO_SAMPLE_RATE,
+                RecordConfig.AUDIO_FORMAT_CHANNEL_FOR_RECORD,
+                RecordConfig.AUDIO_FORMAT_BIT,
+                bufferSize);
 
-        mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, AUDIO_FREQUENCY, AUDIO_FORMAT_CHANNEL_FOR_RECORD, AUDIO_FORMAT_BIT, bufferSize);
-
-        //TODO check is init success
         if (mAudioRecord.getState() == AudioRecord.STATE_UNINITIALIZED) {
             Mog.e("error : AudioRecord getState =  STATE_UNINITIALIZED");
-            mAudioRecord = null;
-            return;
+            throw new RuntimeException("error : AudioRecord init failed!");
         }
     }
 
     public boolean startRecord () {
-        Mog.i("java audio staret record");
+        Mog.i("java audio start record");
+
         if (mBuffer == null) {
             mBuffer = new byte[BUFFER_LENGTH];
         }
@@ -80,7 +63,6 @@ public class AudioRecorder {
         } else {
             Mog.e("mAudioRecord getRecordingState STATE_UNINITIALIZED");
         }
-
         return false;
     }
 
@@ -97,6 +79,18 @@ public class AudioRecorder {
         return null;
     }
 
+    public void stopRecord() {
+        if (mAudioRecord != null && mAudioRecord.getState() == AudioRecord.STATE_INITIALIZED) {
+            try {
+                Mog.i("AudioRecorder startRecording");
+                mAudioRecord.stop();
+            } catch (IllegalStateException e) {
+                Mog.e("error : mAudioRecord startRecording fail catch exp");
+            }
+        } else {
+            Mog.e("mAudioRecord getRecordingState STATE_UNINITIALIZED");
+        }
+    }
 
     public void release () {
         Mog.i("AudioRecorder release");
@@ -106,5 +100,4 @@ public class AudioRecorder {
             mAudioRecord = null;
         }
     }
-
 }

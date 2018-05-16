@@ -10,7 +10,10 @@ extern "C" {
 };
 
 #include "RecorderConfig.h"
+#ifndef _TREAD_SAFE_QUEUE
+#define _TREAD_SAFE_QUEUE
 #include "threadsafe_queue.cpp"
+#endif
 
 class AACEncoder {
 

@@ -26,12 +26,12 @@ public:
     int rotate_type = -1;
     int v_custom_format;
 
-
     //audio
     int audio_bit_rate;
     int audio_sample_rate;
     char* audio_path;
 
+public:
 
     static const int CONST_ROTATE_90 = 1;
 

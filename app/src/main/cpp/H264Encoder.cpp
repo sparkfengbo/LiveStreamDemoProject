@@ -47,7 +47,7 @@ int H264Encoder::initH264Encoder() {
     av_dump_format(pFormatCtx, 0, out_file, 1);
 
     //指定libx264进行编码
-    pCodec = avcodec_find_encoder_by_name("lib_x264");
+    pCodec = avcodec_find_encoder_by_name("libx264");
 
     if (!pCodec) {
         LOGE("error find video encoder");
@@ -72,7 +72,7 @@ int H264Encoder::initH264Encoder() {
     }
 
     pCodecCtx->bit_rate = recordConfig->video_bit_rate;
-    pCodecCtx->gop_size = 250;
+    pCodecCtx->gop_size = 40;
 
     pCodecCtx->time_base.num = 1;
     pCodecCtx->time_base.den = recordConfig->video_frame_rate;

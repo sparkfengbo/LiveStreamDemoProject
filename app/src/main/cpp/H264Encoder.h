@@ -7,12 +7,12 @@
 
 
 extern "C" {
-
-
-}
-
 #include <libavformat/avformat.h>
+}
+#ifndef _TREAD_SAFE_QUEUE
+#define _TREAD_SAFE_QUEUE
 #include "threadsafe_queue.cpp"
+#endif
 #include "RecorderConfig.h"
 
 class H264Encoder {

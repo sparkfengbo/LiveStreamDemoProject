@@ -1,6 +1,7 @@
 package com.sparkfengbo.ng.livestreamdemoproject;
 
 import com.sparkfengbo.ng.livestreamdemoproject.recorder.AudioRecorder;
+import com.sparkfengbo.ng.livestreamdemoproject.util.Mog;
 
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -13,16 +14,6 @@ import android.os.Message;
 
 public class RecorderManager {
 
-    private static final int MSG_CAMERA_FRAME_DATA = 1;
-    private CameraPreview mCameraRecorder;
-    private AudioRecorder mAudioRecorder;
-
-    private AudioRecordThread mAudioRecordThread;
-    private HandlerThread mCameraRecordTherad;
-
-    private Handler mMainThreadHandler;
-    private Handler mCameraDataHandler;
-
     static {
         System.loadLibrary("fdk-aac");
         System.loadLibrary("avcodec");
@@ -34,13 +25,24 @@ public class RecorderManager {
         System.loadLibrary("record_util");
     }
 
+    private static final int MSG_CAMERA_FRAME_DATA = 1;
+
+    private CameraPreview mCameraPreview;
+    private AudioRecorder mAudioRecorder;
+
+    private AudioRecordThread mAudioRecordThread;
+    private HandlerThread mCameraRecordTherad;
+
+    private Handler mMainThreadHandler;
+    private Handler mCameraDataHandler;
+
     public RecorderManager(CameraPreview cameraRecorder) {
         if (cameraRecorder == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("Recorder Manager must init with NOT-NULL CameraPreview");
         }
 
-        mCameraRecorder = cameraRecorder;
-        mCameraRecorder.setCallback(new CameraPreview.OnFrameDataCallback() {
+        mCameraPreview = cameraRecorder;
+        mCameraPreview.setCallback(new CameraPreview.OnFrameDataCallback() {
             @Override
             public void onFrameData(byte[] data, int length, int rotate) {
                 if (mCameraDataHandler != null) {
@@ -49,6 +51,7 @@ public class RecorderManager {
                     msg.obj = data;
                     msg.arg1 = length;
                     msg.arg2 = rotate;
+//                    Mog.i("" + data.length);
                     mCameraDataHandler.sendMessage(msg);
                 }
             }
@@ -81,6 +84,7 @@ public class RecorderManager {
         public boolean handleMessage(Message message) {
             if (message != null && message.what == MSG_CAMERA_FRAME_DATA) {
                 if (message.obj instanceof byte[]) {
+//                    Mog.i("Camera Handler Thread receive : " + ((byte[]) message.obj).length);
                     nativeSendYUVData((byte[]) message.obj);
                 }
                 return true;
@@ -112,13 +116,34 @@ public class RecorderManager {
     }
 
     public void stopAAC() {
-        Mog.i("stop encode");
+        Mog.i("stop encode AAC");
         stopEncodeAAC();
+    }
+
+    public void startRecordH264() {
+
+        if (mCameraRecordTherad == null) {
+            mCameraRecordTherad = new HandlerThread("Camera native send");
+            mCameraRecordTherad.start();
+        }
+
+        if (mCameraDataHandler == null) {
+            mCameraDataHandler = new Handler(mCameraRecordTherad.getLooper(), mCameraCallback);
+        }
+
+        initH264Encoder();
+    }
+
+    public void stopRecordH264() {
+        stopEncodeH264();
+    }
+
+    public void startMuxMP4() {
+        muxMP4();
     }
 
 
     public class AudioRecordThread extends Thread {
-
         private AudioRecorder mAudioRecorder;
 
         public AudioRecordThread(AudioRecorder audioRecorder) {
@@ -139,19 +164,15 @@ public class RecorderManager {
                 while (true) {
                     byte[] audioData = mAudioRecorder.readData();
                     if (audioData != null) {
-                        long legnth = nativeSendPCMData(audioData);
-//                        Mog.i("length = " + legnth);
-//                        Mog.i("receive audioData, audioData.length : " + audioData.length + "  thread : " + Thread.currentThread().getName());
+                        nativeSendPCMData(audioData);
                     } else {
                         Mog.e("receive audioData empty");
                     }
-
-                    //TODO
-//                    try {
-//                        sleep(40);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
+                    try {
+                        Thread.sleep(40);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -184,14 +205,19 @@ public class RecorderManager {
      * @param cmd 指令
      * @return 执行code
      */
-    public native int run(String[] cmd);
+    private native int run(String[] cmd);
 
-    public native long nativeSendPCMData(byte[] data);
+    private native long nativeSendPCMData(byte[] data);
 
-    public native long nativeSendYUVData(byte[] data);
+    private native long nativeSendYUVData(byte[] data);
 
     private native void initAACEncoder();
 
     private native void stopEncodeAAC();
 
+    private native void initH264Encoder();
+
+    private native void stopEncodeH264();
+
+    private native void muxMP4();
 }

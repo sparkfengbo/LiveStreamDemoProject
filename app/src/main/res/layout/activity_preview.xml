@@ -60,17 +60,19 @@
 
 
     <LinearLayout
+            android:id="@+id/aac_wapper"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_alignParentBottom="true">
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true">
 
         <Button
                 android:id="@+id/btn_record_aac"
                 android:layout_height="40dp"
                 android:layout_width="80dp"
                 android:background="@color/button_bg"
-                android:text="录音"
+                android:text="RecordAAC"
                 android:layout_marginTop="10dp"
                 />
         <Button
@@ -78,10 +80,45 @@
                 android:layout_height="40dp"
                 android:layout_width="80dp"
                 android:background="@color/button_bg"
-                android:text="stop"
+                android:text="StopAAC"
                 android:layout_marginTop="10dp"
                 />
 
     </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_alignParentBottom="true"
+            android:layout_toRightOf="@+id/aac_wapper">
+
+        <Button
+                android:id="@+id/btn_record_h264"
+                android:layout_height="40dp"
+                android:layout_width="80dp"
+                android:background="@color/button_bg"
+                android:text="RecordH264"
+                android:layout_marginTop="10dp"
+                />
+        <Button
+                android:id="@+id/btn_stop_h264"
+                android:layout_height="40dp"
+                android:layout_width="80dp"
+                android:background="@color/button_bg"
+                android:text="StopH264"
+                android:layout_marginTop="10dp"
+                />
+
+    </LinearLayout>
+
+    <Button
+            android:id="@+id/btn_mux_mp4"
+            android:layout_height="40dp"
+            android:layout_width="80dp"
+            android:background="@color/button_bg"
+            android:text="合成MP4"
+            android:layout_marginTop="10dp"
+            />
 </RelativeLayout>
 

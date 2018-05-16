@@ -1,4 +1,4 @@
-package com.sparkfengbo.ng.livestreamdemoproject;
+package com.sparkfengbo.ng.livestreamdemoproject.util;
 
 import android.util.Log;
 

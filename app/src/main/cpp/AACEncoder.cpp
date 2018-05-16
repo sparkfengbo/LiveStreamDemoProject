@@ -27,25 +27,25 @@ int AACEncoder::initAAEncoder() {
     av_register_all();
 
     /***TEST  查看当前支持的编解码器***/
-//    AVCodec *c_temp = av_codec_next(NULL);
-//
-//    while (c_temp != NULL)
-//    {
-//        switch (c_temp->type)
-//        {
-//            case AVMEDIA_TYPE_VIDEO:
-//                LOGI("%s %10s\n", "[Video]", c_temp->name);
-//
-//                break;
-//            case AVMEDIA_TYPE_AUDIO:
-//                LOGI("%s %10s\n", "[Audeo]", c_temp->name);
-//                break;
-//            default:
-//                LOGI("%s %10s\n", "[Other]", c_temp->name);
-//                break;
-//        }
-//        c_temp = c_temp->next;
-//    }
+    AVCodec *c_temp = av_codec_next(NULL);
+
+    while (c_temp != NULL)
+    {
+        switch (c_temp->type)
+        {
+            case AVMEDIA_TYPE_VIDEO:
+                LOGI("%s %10s\n", "[Video]", c_temp->name);
+
+                break;
+            case AVMEDIA_TYPE_AUDIO:
+                LOGI("%s %10s\n", "[Audio]", c_temp->name);
+                break;
+            default:
+                LOGI("%s %10s\n", "[Other]", c_temp->name);
+                break;
+        }
+        c_temp = c_temp->next;
+    }
     /********/
 
     pFormatCtx = avformat_alloc_context();

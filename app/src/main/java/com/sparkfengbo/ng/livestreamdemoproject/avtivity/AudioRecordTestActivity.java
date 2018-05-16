@@ -1,4 +1,6 @@
-package com.sparkfengbo.ng.livestreamdemoproject;
+package com.sparkfengbo.ng.livestreamdemoproject.avtivity;
+
+import com.sparkfengbo.ng.livestreamdemoproject.R;
 
 import android.app.Activity;
 import android.os.Bundle;
