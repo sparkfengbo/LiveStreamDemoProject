@@ -91,14 +91,15 @@ JNIEXPORT void JNICALL
 Java_com_sparkfengbo_ng_livestreamdemoproject_RecorderManager_initH264Encoder(JNIEnv *env, jobject instance) {
 
     RecordConfig *config = new RecordConfig();
+//    1280*960
     config->video_in_width = 2048;
     config->video_in_height = 1080;
-    config->video_out_width = 1080;
-    config->video_out_height = 2048;
-    config->video_path = "/sdcard/DCIM/test-video.h264";
-    config->video_frame_rate = 20;
-    config->video_bit_rate = 1000000;
 
+    config->video_out_width = 2048;
+    config->video_out_height = 1080;
+    config->video_path = "/sdcard/DCIM/test-video.h264";
+    config->video_frame_rate = 30;
+    config->video_bit_rate = 1000000;
 //    config.v_custom_format;
     config->rotate_type = config->CONST_ROTATE_90;
     h264Encoder = new H264Encoder(config);
@@ -117,16 +118,25 @@ Java_com_sparkfengbo_ng_livestreamdemoproject_RecorderManager_stopEncodeH264(JNI
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_sparkfengbo_ng_livestreamdemoproject_RecorderManager_muxMP4(JNIEnv *env, jobject instance) {
-    char *cmd[10];
+//    char *cmd[10];
+//    cmd[0]="ffmpeg";
+//    cmd[1]="-i";
+//    cmd[2]="/sdcard/DCIM/test-video.h264";
+//    cmd[3]="-i";
+//    cmd[4]="/sdcard/DCIM/test.aac";
+//    cmd[5]="-c:v";
+//    cmd[6]="copy";
+//    cmd[7]="-c:a";
+//    cmd[8]="copy";
+//    cmd[9]="/sdcard/DCIM/test-mp4.mp4";
+//    run(10,cmd);
+
+    char *cmd[6];
     cmd[0]="ffmpeg";
     cmd[1]="-i";
     cmd[2]="/sdcard/DCIM/test-video.h264";
-    cmd[3]="-i";
-    cmd[4]="/sdcard/DCIM/test.aac";
-    cmd[5]="-c:v";
-    cmd[6]="copy";
-    cmd[7]="-c:a";
-    cmd[8]="copy";
-    cmd[9]="/sdcard/DCIM/test-mp4.mp4";
-    run(10,cmd);
+    cmd[3]="-c:v";
+    cmd[4]="copy";
+    cmd[5]="/sdcard/DCIM/test-mp4.mp4";
+    run(6,cmd);
 }

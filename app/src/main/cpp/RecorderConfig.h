@@ -33,9 +33,14 @@ public:
 
 public:
 
-    static const int CONST_ROTATE_90 = 1;
+    static const int CONST_ROTATE_0 = 1;
 
-    static const int CONST_ROTATE_180 = 2;
+    static const int CONST_ROTATE_90 = 2;
+
+    static const int CONST_ROTATE_180 = 3;
+
+    static const int CONST_ROTATE_270 = 4;
+
 
 };
 

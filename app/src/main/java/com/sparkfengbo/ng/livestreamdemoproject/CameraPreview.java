@@ -1,5 +1,6 @@
 package com.sparkfengbo.ng.livestreamdemoproject;
 
+import com.sparkfengbo.ng.livestreamdemoproject.recorder.RecordConfig;
 import com.sparkfengbo.ng.livestreamdemoproject.util.Mog;
 
 import android.content.Context;
@@ -108,6 +109,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         Camera.Size optimalSize = getOptimalPreviewSize(sizes, getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
 
         parameters.setPreviewSize(optimalSize.width, optimalSize.height);
+
+
+        parameters.setPreviewFrameRate(RecordConfig.VIDEO_FRAME_RATE);
+
 
         Mog.i("width : " + optimalSize.width + "   height : "  +optimalSize.height);
         camera.setParameters(parameters);

@@ -30,4 +30,8 @@ public class RecordConfig {
 
 
 
+    public static final int VIDEO_FRAME_RATE = 30;
+
+
+
 }

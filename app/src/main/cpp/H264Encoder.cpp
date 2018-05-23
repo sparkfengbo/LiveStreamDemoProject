@@ -1,7 +1,6 @@
 //
 // Created by fengbo on 2018/5/9.
 //
-
 extern "C" {
 #include "libavutil/opt.h"
 #include "libavformat/avformat.h"
@@ -15,7 +14,6 @@ H264Encoder::H264Encoder(RecordConfig *config) {
 }
 
 int H264Encoder::initH264Encoder() {
-
     LOGI("start init H264 Encoder");
 
     size_t path_length = strlen(recordConfig->video_path);
@@ -60,27 +58,32 @@ int H264Encoder::initH264Encoder() {
     pCodecCtx->codec_id = AV_CODEC_ID_H264;
     pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
 
-    pCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P; //TODO 确认android手机是否支持这个
+    pCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
 
-    if (recordConfig->rotate_type == recordConfig->CONST_ROTATE_90
+    //Android 摄像头会有旋转
+    if (recordConfig->rotate_type == recordConfig->CONST_ROTATE_0
         || recordConfig->rotate_type ==  recordConfig->CONST_ROTATE_180) {
-        pCodecCtx->width = recordConfig->video_in_height;
-        pCodecCtx->height = recordConfig->video_out_width;
-    } else {
         pCodecCtx->width = recordConfig->video_out_width;
-        pCodecCtx->height = recordConfig->video_in_height;
+        pCodecCtx->height = recordConfig->video_out_height;
+    } else {
+        pCodecCtx->width = recordConfig->video_out_height;
+        pCodecCtx->height = recordConfig->video_out_width;
     }
 
     pCodecCtx->bit_rate = recordConfig->video_bit_rate;
     pCodecCtx->gop_size = 40;
+    pCodecCtx->thread_count = 12;
+
 
     pCodecCtx->time_base.num = 1;
     pCodecCtx->time_base.den = recordConfig->video_frame_rate;
 
-    pCodecCtx->qmin = 10; //TODO 搞清楚这些字段的含义
+
+    //TODO 搞清楚这些字段的含义
+    pCodecCtx->qmin = 10;
     pCodecCtx->qmax = 51;
 
-//    pCodecCtx->max_b_frames = 3; //最大B帧个数
+    pCodecCtx->max_b_frames = 3; //最大B帧个数
 
     AVDictionary *params = 0;
 
@@ -177,7 +180,39 @@ void* H264Encoder::startEncode(void *obj) {
 
 void H264Encoder::custom_filter(const H264Encoder *h264Encoder, const uint8_t *picture_buf, int in_y_size,
                                 int format) {
-    //TODO
+    //   y值在H方向开始行
+    int y_height_start_index = h264Encoder->recordConfig->video_in_height - h264Encoder->recordConfig->video_out_height;
+    //   uv值在H方向开始行
+    int uv_height_start_index = y_height_start_index / 2;
+
+
+    //只支持旋转90度
+    for (int i = y_height_start_index; i < h264Encoder->recordConfig->video_in_height; i++) {
+
+        for (int j = 0; j < h264Encoder->recordConfig->video_out_width; j++) {
+
+            int index = h264Encoder->recordConfig->video_in_width * i + j;
+            uint8_t value = *(picture_buf + index);
+            *(h264Encoder->pFrame->data[0] + j * h264Encoder->recordConfig->video_out_height +
+              (h264Encoder->recordConfig->video_out_height - (i - y_height_start_index) - 1)) = value;
+        }
+    }
+
+    for (int i = uv_height_start_index; i < h264Encoder->recordConfig->video_in_height / 2; i++) {
+        for (int j = 0; j < h264Encoder->recordConfig->video_out_width / 2; j++) {
+            int index = h264Encoder->recordConfig->video_in_width / 2 * i + j;
+            uint8_t v = *(picture_buf + in_y_size + index);
+            uint8_t u = *(picture_buf + in_y_size * 5 / 4 + index);
+            *(h264Encoder->pFrame->data[2] + (j * h264Encoder->recordConfig->video_out_height / 2 +
+                                              (h264Encoder->recordConfig->video_out_height / 2 -
+                                               (i - uv_height_start_index) -
+                                               1))) = v;
+            *(h264Encoder->pFrame->data[1] + (j * h264Encoder->recordConfig->video_out_height / 2 +
+                                              (h264Encoder->recordConfig->video_out_height / 2 -
+                                               (i - uv_height_start_index) -
+                                               1))) = u;
+        }
+    }
     return;
 }
 
