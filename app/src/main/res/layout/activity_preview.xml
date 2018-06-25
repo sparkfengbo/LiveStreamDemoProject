@@ -119,6 +119,16 @@
             android:background="@color/button_bg"
             android:text="合成MP4"
             android:layout_marginTop="10dp"
+            android:visibility="gone"
+            />
+
+    <Button
+            android:id="@+id/btn_rtmp"
+            android:layout_height="40dp"
+            android:layout_width="80dp"
+            android:background="@color/button_bg"
+            android:text="RTMP"
+            android:layout_marginTop="10dp"
             />
 </RelativeLayout>
 

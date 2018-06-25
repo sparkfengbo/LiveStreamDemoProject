@@ -2,10 +2,10 @@
 // Created by fengbo on 2018/5/11.
 //
 #include "MP4Muxer.h"
-#include "LogUtils.h"
+#include "util/LogUtils.h"
 
 extern "C" {
-#include "ffmpeg.h"
+#include "ffmpeg/ffmpeg.h"
 }
 
 int MP4Muxer::startMuxer(const char *video, const char *audio, const char *out_file) {

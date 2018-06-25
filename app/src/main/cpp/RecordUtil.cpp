@@ -1,16 +1,25 @@
 
 #include <jni.h>
-#include "LogUtils.h"
+#include "util/LogUtils.h"
 
-#include "AACEncoder.h"
-#include "H264Encoder.h"
+#include "audio/AACEncoder.h"
+#include "video/H264Encoder.h"
+#include "RTMPSender.h"
+#include "RtmpStreamer.h"
 
 extern "C" {
-#include "ffmpeg.h"
+#include "ffmpeg/ffmpeg.h"
 }
 
 AACEncoder *audioEncoder;
 H264Encoder *h264Encoder;
+RTMPSender *rtmpEncoder;
+RecordConfig *config;
+
+
+void setupRecordConfig() {
+
+}
 
 extern "C"
 JNIEXPORT jlong JNICALL
@@ -139,4 +148,43 @@ Java_com_sparkfengbo_ng_livestreamdemoproject_RecorderManager_muxMP4(JNIEnv *env
     cmd[4]="copy";
     cmd[5]="/sdcard/DCIM/test-mp4.mp4";
     run(6,cmd);
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_sparkfengbo_ng_livestreamdemoproject_RecorderManager_nativeStartPushRtmp(JNIEnv *env, jobject instance) {
+
+    // TODO
+    AACEncoder *tAudioEncoder;
+    H264Encoder *tH264Encoder;
+    RtmpStreamer *rtmpStreamer;
+
+    RecordConfig *aacConfig = new RecordConfig();
+    aacConfig->audio_bit_rate = 64000;
+    aacConfig->audio_path = "/sdcard/DCIM/test.aac";
+    aacConfig->audio_sample_rate = 44100;
+    tAudioEncoder = new AACEncoder(aacConfig);
+    tAudioEncoder->initAAEncoder();
+
+
+    RecordConfig *h264config = new RecordConfig();
+//    1280*960
+    h264config->video_in_width = 2048;
+    h264config->video_in_height = 1080;
+
+    h264config->video_out_width = 2048;
+    h264config->video_out_height = 1080;
+    h264config->video_path = "/sdcard/DCIM/test-video.h264";
+    h264config->video_frame_rate = 30;
+    h264config->video_bit_rate = 1000000;
+//    config.v_custom_format;
+    h264config->rotate_type = config->CONST_ROTATE_90;
+
+    tH264Encoder = new H264Encoder(h264config);
+    tH264Encoder->initH264Encoder();
+
+    rtmpStreamer = new RtmpStreamer();
+    rtmpStreamer->init("rtmp://172.22.126.95:1935/test/live");
+    rtmpStreamer->setAudioEncoder(tAudioEncoder);
+    rtmpStreamer->setVideoEncoder(tH264Encoder);
+    rtmpStreamer->startPush();
 }

@@ -142,6 +142,17 @@ public class RecorderManager {
         muxMP4();
     }
 
+    public void startRtmpLocalFile() {
+
+
+
+
+    }
+
+    public void startPushRtmp() {
+        nativeStartPushRtmp();
+    }
+
 
     public class AudioRecordThread extends Thread {
         private AudioRecorder mAudioRecorder;
@@ -220,4 +231,6 @@ public class RecorderManager {
     private native void stopEncodeH264();
 
     private native void muxMP4();
+
+    private native void nativeStartPushRtmp();
 }

@@ -57,6 +57,9 @@ public class PreviewActivity extends Activity {
      * 合成MP4视频
      */
     private Button mBtnMuxMP4;
+
+    private Button mBtnRtmp;
+
     /**
      * 摄像头预览和采集
      */
@@ -82,6 +85,8 @@ public class PreviewActivity extends Activity {
         mBtnStart264 = (Button) findViewById(R.id.btn_record_h264);
         mBtnStop264 = (Button) findViewById(R.id.btn_stop_h264);
         mBtnMuxMP4 = (Button) findViewById(R.id.btn_mux_mp4);
+        mBtnRtmp = (Button) findViewById(R.id.btn_rtmp);
+
 
         mBtnTurnAround.setOnClickListener(mOnClickListener);
         mBtnLignts.setOnClickListener(mOnClickListener);
@@ -92,6 +97,7 @@ public class PreviewActivity extends Activity {
         mBtnStart264.setOnClickListener(mOnClickListener);
         mBtnStop264.setOnClickListener(mOnClickListener);
         mBtnMuxMP4.setOnClickListener(mOnClickListener);
+        mBtnRtmp.setOnClickListener(mOnClickListener);
 
         mRecorderManager = new RecorderManager(mCameraRecorder);
     }
@@ -148,6 +154,8 @@ public class PreviewActivity extends Activity {
                 final String cmd = "ffmpeg -i " + path + source + " -vframes 100 -y -f gif -s 480×320 " + path + dest;
                 int a  = mRecorderManager.cmdRun(cmd);
                 Mog.i("执行命令" + a + "");
+            } else if (view == mBtnRtmp) {
+                mRecorderManager.startPushRtmp();
             }
         }
     };

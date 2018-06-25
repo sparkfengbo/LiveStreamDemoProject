@@ -6,7 +6,7 @@ extern "C" {
 #include "libavformat/avformat.h"
 }
 #include "H264Encoder.h"
-#include "LogUtils.h"
+#include "../util/LogUtils.h"
 
 H264Encoder::H264Encoder(RecordConfig *config) {
     LOGI("new h264 encoder");
@@ -24,25 +24,25 @@ int H264Encoder::initH264Encoder() {
 
     av_register_all();
 
-    pFormatCtx = avformat_alloc_context();
-
-    pOutFormat = av_guess_format(NULL, out_file, NULL);
-
-    pFormatCtx->oformat = pOutFormat;
-
-    if (avio_open(&pFormatCtx->pb, out_file, AVIO_FLAG_READ_WRITE) < 0) {
-        LOGE("Failed to open video output file!");
-        return -1;
-    }
-
-    video_st =avformat_new_stream(pFormatCtx, 0);
-
-    if (video_st == NULL) {
-        LOGE("allocate video stream fail");
-        return -1;
-    }
-
-    av_dump_format(pFormatCtx, 0, out_file, 1);
+//    pFormatCtx = avformat_alloc_context();
+//
+//    pOutFormat = av_guess_format(NULL, out_file, NULL);
+//
+//    pFormatCtx->oformat = pOutFormat;
+//
+//    if (avio_open(&pFormatCtx->pb, out_file, AVIO_FLAG_READ_WRITE) < 0) {
+//        LOGE("Failed to open video output file!");
+//        return -1;
+//    }
+//
+//    video_st =avformat_new_stream(pFormatCtx, 0);
+//
+//    if (video_st == NULL) {
+//        LOGE("allocate video stream fail");
+//        return -1;
+//    }
+//
+//    av_dump_format(pFormatCtx, 0, out_file, 1);
 
     //指定libx264进行编码
     pCodec = avcodec_find_encoder_by_name("libx264");
@@ -74,24 +74,29 @@ int H264Encoder::initH264Encoder() {
     pCodecCtx->gop_size = 40;
     pCodecCtx->thread_count = 12;
 
+    //media plus
+    pCodecCtx->thread_count = 12;
+    pCodecCtx->level = 41;
+
 
     pCodecCtx->time_base.num = 1;
     pCodecCtx->time_base.den = recordConfig->video_frame_rate;
+    pCodecCtx->refs = 1;
 
 
     //TODO 搞清楚这些字段的含义
     pCodecCtx->qmin = 10;
     pCodecCtx->qmax = 51;
 
-    pCodecCtx->max_b_frames = 3; //最大B帧个数
+    pCodecCtx->max_b_frames = 0; //最大B帧个数
 
     AVDictionary *params = 0;
 
-    av_opt_set(pCodecCtx->priv_data, "preset", "ultrafast", 0);
+    av_dict_set(&params, "preset", "ultrafast", 0);
 
     av_dict_set(&params, "profile", "baseline", 0);
 
-    int state = avcodec_open2(pCodecCtx, pCodec, NULL);
+    int state = avcodec_open2(pCodecCtx, pCodec, &params);
 
     if (state < 0) {
         LOGE("error open video encoder ret = %d", state);
@@ -111,7 +116,7 @@ int H264Encoder::initH264Encoder() {
 
     avpicture_fill((AVPicture *) pFrame, buf, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height);
 
-    avformat_write_header(pFormatCtx, NULL);
+//    avformat_write_header(pFormatCtx, NULL);
 
     av_new_packet(&pkt, picture_size);
 
@@ -122,8 +127,7 @@ int H264Encoder::initH264Encoder() {
     in_frame_size_bits = in_frame_size * 3 /2;
 
     is_end = 0;
-    pthread_t thread;
-    pthread_create(&thread, NULL, H264Encoder::startEncode, this);
+//    pthread_create(&thread, NULL, H264Encoder::startLoopEncodeInThread, this);
     LOGI("video encoder init finish");
     return 0;
 }
@@ -136,7 +140,7 @@ int H264Encoder::pushOneFrame(uint8_t *frame) {
     return 0;
 }
 
-void* H264Encoder::startEncode(void *obj) {
+void* H264Encoder::startLoopEncodeInThread(void *obj) {
     LOGI("start encode video");
 
     H264Encoder *h264Encoder = (H264Encoder *) obj;
@@ -161,12 +165,12 @@ void* H264Encoder::startEncode(void *obj) {
             LOGE("Fail encode video!");
         }
 
-        if (got_frame == 1) {
-            h264Encoder->pkt.stream_index = h264Encoder->video_st->index;
-            h264Encoder->frameCnt++;
-            ret = av_write_frame(h264Encoder->pFormatCtx, &h264Encoder->pkt);
-            av_free_packet(&h264Encoder->pkt);
-        }
+//        if (got_frame == 1) {
+//            h264Encoder->pkt.stream_index = h264Encoder->video_st->index;
+//            h264Encoder->frameCnt++;
+//            ret = av_write_frame(h264Encoder->pFormatCtx, &h264Encoder->pkt);
+//            av_free_packet(&h264Encoder->pkt);
+//        }
         delete(picture_buf);
     }
 
@@ -176,6 +180,30 @@ void* H264Encoder::startEncode(void *obj) {
         delete h264Encoder;
     }
     return 0;
+}
+
+int H264Encoder::startEncodeForRtmp(FrameData *data) {
+
+    int ret = 0;
+
+    uint8_t *picture_buf = data->data;
+
+    custom_filter(this, picture_buf, in_frame_size, recordConfig->v_custom_format);
+
+    pFrame->pts = pts;
+    pts++;
+
+    int got_frame = 0;
+
+    ret = avcodec_encode_video2(pCodecCtx, &pkt, pFrame, &got_frame);
+
+    if (ret < 0) {
+        LOGE("Fail encode video!");
+    }
+
+    delete(data->data);
+    data->avPacket = &pkt;
+    return pkt.size;
 }
 
 void H264Encoder::custom_filter(const H264Encoder *h264Encoder, const uint8_t *picture_buf, int in_y_size,
@@ -221,21 +249,21 @@ void H264Encoder::userStop() {
 }
 
 void H264Encoder::endEncoder() {
-    int ret = flush_encoder(pFormatCtx, 0);
-    if (ret < 0) {
-        LOGE("flush video encoder fail!");
-        return;
-    }
-    av_write_trailer(pFormatCtx);
-
-    if (video_st) {
-        avcodec_close(pCodecCtx);
-        av_free(pFrame);
-    }
-
-    avio_close(pFormatCtx->pb);
-    avformat_free_context(pFormatCtx);
-    LOGI("h264 encoder encode finish");
+//    int ret = flush_encoder(pFormatCtx, 0);
+//    if (ret < 0) {
+//        LOGE("flush video encoder fail!");
+//        return;
+//    }
+//    av_write_trailer(pFormatCtx);
+//
+//    if (video_st) {
+//        avcodec_close(pCodecCtx);
+//        av_free(pFrame);
+//    }
+//
+//    avio_close(pFormatCtx->pb);
+//    avformat_free_context(pFormatCtx);
+//    LOGI("h264 encoder encode finish");
 }
 
 int H264Encoder::flush_encoder(AVFormatContext *fmt_ctx, unsigned int stream_index) {

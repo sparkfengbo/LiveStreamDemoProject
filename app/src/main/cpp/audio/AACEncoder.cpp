@@ -3,9 +3,7 @@
 //
 
 #include "AACEncoder.h"
-#include "LogUtils.h"
-
-using namespace std;
+#include "../util/LogUtils.h"
 
 /**
  * 初始化函数
@@ -19,52 +17,52 @@ AACEncoder::AACEncoder(RecordConfig *config) {
 int AACEncoder::initAAEncoder() {
     LOGI("start init AACEncoder ");
 
-    size_t path_length = strlen(recordConfig->audio_path);
+//    size_t path_length = strlen(recordConfig->audio_path);
 
-    char* outfile = (char * )malloc(path_length + 1);
-    strcpy(outfile, recordConfig->audio_path);
+//    char* outfile = (char * )malloc(path_length + 1);
+//    strcpy(outfile, recordConfig->audio_path);
 
     av_register_all();
 
     /***TEST  查看当前支持的编解码器***/
-    AVCodec *c_temp = av_codec_next(NULL);
-
-    while (c_temp != NULL)
-    {
-        switch (c_temp->type)
-        {
-            case AVMEDIA_TYPE_VIDEO:
-                LOGI("%s %10s\n", "[Video]", c_temp->name);
-
-                break;
-            case AVMEDIA_TYPE_AUDIO:
-                LOGI("%s %10s\n", "[Audio]", c_temp->name);
-                break;
-            default:
-                LOGI("%s %10s\n", "[Other]", c_temp->name);
-                break;
-        }
-        c_temp = c_temp->next;
-    }
+//    AVCodec *c_temp = av_codec_next(NULL);
+//
+//    while (c_temp != NULL)
+//    {
+//        switch (c_temp->type)
+//        {
+//            case AVMEDIA_TYPE_VIDEO:
+//                LOGI("%s %10s\n", "[Video]", c_temp->name);
+//
+//                break;
+//            case AVMEDIA_TYPE_AUDIO:
+//                LOGI("%s %10s\n", "[Audio]", c_temp->name);
+//                break;
+//            default:
+//                LOGI("%s %10s\n", "[Other]", c_temp->name);
+//                break;
+//        }
+//        c_temp = c_temp->next;
+//    }
     /********/
 
-    pFormatCtx = avformat_alloc_context();
-    fmt = av_guess_format(NULL, outfile, NULL);
-    pFormatCtx->oformat = fmt;
-
-    if (avio_open(&pFormatCtx->pb, outfile, AVIO_FLAG_READ_WRITE) < 0) {
-        LOGE("Failed to open audio output file!");
-        return -1;
-    }
-
-    audio_st = avformat_new_stream(pFormatCtx, 0);
-
-    if (audio_st == NULL) {
-        LOGE("allocate audio stream fail");
-        return -1;
-    }
-
-    av_dump_format(pFormatCtx, 0, outfile, 1);
+//    pFormatCtx = avformat_alloc_context();
+//    fmt = av_guess_format(NULL, outfile, NULL);
+//    pFormatCtx->oformat = fmt;
+//
+//    if (avio_open(&pFormatCtx->pb, outfile, AVIO_FLAG_READ_WRITE) < 0) {
+//        LOGE("Failed to open audio output file!");
+//        return -1;
+//    }
+//
+//    audio_st = avformat_new_stream(pFormatCtx, 0);
+//
+//    if (audio_st == NULL) {
+//        LOGE("allocate audio stream fail");
+//        return -1;
+//    }
+//
+//    av_dump_format(pFormatCtx, 0, outfile, 1);
 
 //    pCodec = avcodec_find_encoder(AV_CODEC_ID_AAC);
 
@@ -95,7 +93,7 @@ int AACEncoder::initAAEncoder() {
 //    pCodecCtx->bit_rate = recordConfig->audio_bit_rate;
     pCodecCtx->bit_rate = 64000;
 
-    LOGI("channels : %d ", pCodecCtx->channels);
+//    LOGI("channels : %d ", pCodecCtx->channels);
     int state = avcodec_open2(pCodecCtx, pCodec, NULL);
 
     if (state < 0) {
@@ -115,12 +113,11 @@ int AACEncoder::initAAEncoder() {
     uint8_t *frame_buf = (uint8_t *) av_malloc(frame_size);
     avcodec_fill_audio_frame(pFrame,pCodecCtx->channels, pCodecCtx->sample_fmt, (const uint8_t *) frame_buf, frame_size, 1);
 
-    avformat_write_header(pFormatCtx, NULL);
+//    avformat_write_header(pFormatCtx, NULL);
     av_new_packet(&pkt, frame_size);
     is_end = 0;
 
-    pthread_t thread;
-    pthread_create(&thread, NULL, AACEncoder::startEncode, this);
+//    pthread_create(&thread, NULL, AACEncoder::startLoopEncodeInThread, this);
     LOGI("audio encoder init finish");
     return 0;
 }
@@ -174,21 +171,21 @@ void AACEncoder::userStop() {
 }
 
 void AACEncoder::endEncoder() {
-    int ret = flush_encoder(pFormatCtx, 0);
-    if (ret < 0) {
-        LOGE("flush audio encoder fail!");
-        return;
-    }
-    av_write_trailer(pFormatCtx);
+//    int ret = flush_encoder(pFormatCtx, 0);
+//    if (ret < 0) {
+//        LOGE("flush audio encoder fail!");
+//        return;
+//    }
+//    av_write_trailer(pFormatCtx);
 
-    if (audio_st) {
-        avcodec_close(pCodecCtx);
-        av_free(pFrame);
-    }
-
-    avio_close(pFormatCtx->pb);
-    avformat_free_context(pFormatCtx);
-    LOGI("aac encoder encode finish");
+//    if (audio_st) {
+//        avcodec_close(pCodecCtx);
+//        av_free(pFrame);
+//    }
+//
+//    avio_close(pFormatCtx->pb);
+//    avformat_free_context(pFormatCtx);
+//    LOGI("aac encoder encode finish");
     //TODO 通知muxer
 }
 
@@ -199,7 +196,7 @@ int AACEncoder::pushOneFrame(uint8_t *frame) {
     return 0;
 }
 
-void *AACEncoder::startEncode(void *obj) {
+void *AACEncoder::startLoopEncodeInThread(void *obj) {
     LOGI("start encode audio");
     AACEncoder *aac_encoder = (AACEncoder *)obj;
     //需要两个判断条件，外置的isend标志位，有时队列可能空，而我们并没有想要停止encode
@@ -225,11 +222,11 @@ void *AACEncoder::startEncode(void *obj) {
             LOGE("Fail encode audio!");
         }
 
-        if (got_frame == 1) {
-            aac_encoder->pkt.stream_index = aac_encoder->audio_st->index;
-            ret = av_write_frame(aac_encoder->pFormatCtx, &aac_encoder->pkt);
-            av_free_packet(&aac_encoder->pkt);
-        }
+//        if (got_frame == 1) {
+//            aac_encoder->pkt.stream_index = aac_encoder->audio_st->index;
+//            ret = av_write_frame(aac_encoder->pFormatCtx, &aac_encoder->pkt);
+//            av_free_packet(&aac_encoder->pkt);
+//        }
         delete(framebuf);
     }
 
@@ -240,6 +237,24 @@ void *AACEncoder::startEncode(void *obj) {
     }
 
     return 0;
+}
+
+int AACEncoder::startEncodeForRtmp(FrameData *data) {
+
+    int ret = 0;
+    pFrame->data[0] = data->data;
+    pFrame->pts = pts; //Presentation timestamp in time_base units (time when frame should be shown to user).
+    pts++;
+
+    int got_frame = 0;
+    ret = avcodec_encode_audio2(pCodecCtx, &pkt, pFrame, &got_frame);
+    if (ret < 0) {
+        LOGE("startEncodeForRtmp Fail encode audio!");
+    }
+
+    delete(data->data);
+    data->avPacket = &pkt;
+    return pkt.size;
 }
 
 /**

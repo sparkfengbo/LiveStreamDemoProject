@@ -115,13 +115,14 @@ add_library( # 库名称
              SHARED
 
              # 源码
-             ${CPP_DIR}/cmdutils.c
-             ${CPP_DIR}/ffmpeg.c
-             ${CPP_DIR}/ffmpeg_filter.c
-             ${CPP_DIR}/ffmpeg_opt.c
+             ${CPP_DIR}/ffmpeg/cmdutils.c
+             ${CPP_DIR}/ffmpeg/ffmpeg.c
+             ${CPP_DIR}/ffmpeg/ffmpeg_filter.c
+             ${CPP_DIR}/ffmpeg/ffmpeg_opt.c
              ${CPP_DIR}/RecordUtil.cpp
-             ${CPP_DIR}/AACEncoder.cpp
-             ${CPP_DIR}/H264Encoder.cpp
+             ${CPP_DIR}/audio/AACEncoder.cpp
+             ${CPP_DIR}/video/H264Encoder.cpp
+             ${CPP_DIR}/RtmpStreamer.cpp
               )
 
 

@@ -28,6 +28,10 @@ X264_INCLUDE=$basepath/x264-snapshot-20140916-2245-stable/android/$CPU/include
 
 X264_LIB=$basepath/x264-snapshot-20140916-2245-stable/android/$CPU/lib
 
+LIBRTMP_INCLUDE_PATH=$basepath/rtmpdump/librtmp
+
+LIBRTMP_LIB_PATH=$basepath/rtmpdump/libs/armeabi
+
 FF_EXTRA_CFLAGS="-O3 -fpic -fasm -Wno-psabi -fno-short-enums -fno-strict-aliasing -finline-limit=300 -mfloat-abi=softfp -mfpu=vfp -marm -march=armv6 "
 FF_CFLAGS="-O3 -Wall -pipe \
 -ffast-math \
@@ -51,8 +55,8 @@ build_one(){
 --disable-stripping \
 --nm=$TOOLCHAIN/bin/arm-linux-androideabi-nm \
 --sysroot=$PLATFORM \
---extra-cflags="-I$X264_INCLUDE  -I$FDK_INCLUDE " \
---extra-ldflags="-L$FDK_LIB -L$X264_LIB" \
+--extra-cflags="-I$X264_INCLUDE  -I$FDK_INCLUDE I/$LIBRTMP_INCLUDE_PATH" \
+--extra-ldflags="-L$FDK_LIB -L$X264_LIB -L/$LIBRTMP_LIB_PATH" \
 --enable-gpl \
 --enable-shared \
 --disable-static \
@@ -68,6 +72,7 @@ build_one(){
 --enable-libfdk_aac \
 --enable-encoder=libx264 \
 --enable-encoder=libfdk_aac \
+--enable-librtmp
 --enable-encoder=mjpeg \
 --enable-encoder=png \
 --enable-nonfree \

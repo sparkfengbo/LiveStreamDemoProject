@@ -31,6 +31,10 @@ public:
     int audio_sample_rate;
     char* audio_path;
 
+    //RTMP
+
+    char* rtmpUrl;
+
 public:
 
     static const int CONST_ROTATE_0 = 1;
