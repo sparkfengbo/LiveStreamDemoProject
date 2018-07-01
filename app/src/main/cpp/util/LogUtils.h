@@ -11,7 +11,7 @@
 #include "android/log.h"
 
 #ifndef LOG_TAG
-#define LOG_TAG "JNI"
+#define LOG_TAG "fengbo"
 #endif
 #ifndef IS_DEBUG
 #define IS_DEBUG true

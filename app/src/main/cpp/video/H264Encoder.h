@@ -8,19 +8,28 @@
 
 extern "C" {
 #include <libavformat/avformat.h>
+#include "libavutil/opt.h"
+#include "libavformat/avformat.h"
+#include <libavutil/imgutils.h>
+#include <libavutil/time.h>
+#include <libyuv/convert.h>
 }
+
 #ifndef _TREAD_SAFE_QUEUE
 #define _TREAD_SAFE_QUEUE
 #include "../util/threadsafe_queue.cpp"
 #endif
-#include "../data/RecorderConfig.h"
+
+#include <mutex>
+#include "../util/LogUtils.h"
+#include "../data/VideoConfig.h"
 #include "../data/FrameData.h"
+
+using namespace std;
 
 class H264Encoder {
 
 private:
-    int is_end = 0;
-
 
 //    AVFormatContext *pFormatCtx;
 //    AVOutputFormat *pOutFormat;
@@ -36,14 +45,14 @@ private:
     int in_frame_size_bits;
     int out_y_size;
     int pts = 0;
-    int frameCnt = 0; //??
 
-    RecordConfig *recordConfig;
+    mutable mutex mut;
 
+    VideoConfig *recordConfig;
 public:
     AVCodecContext *pCodecCtx;
     //编码队列
-    threadsafe_queue<uint8_t *> frame_queue;
+    threadsafe_queue<FrameData *> frame_queue;
 
 private:
     int flush_encoder(AVFormatContext *fmt_ctx, unsigned int stream_index);
@@ -54,7 +63,9 @@ private:
 
 public:
 
-    H264Encoder(RecordConfig* config);
+    int is_end = 0;
+
+    H264Encoder(VideoConfig* config);
 
     int initH264Encoder();
 

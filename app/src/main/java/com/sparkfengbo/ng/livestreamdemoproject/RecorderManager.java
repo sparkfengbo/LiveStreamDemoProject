@@ -110,9 +110,8 @@ public class RecorderManager {
             mAudioRecordThread = new AudioRecordThread(mAudioRecorder);
         }
 
-        initAACEncoder();
+//        initAACEncoder();
         mAudioRecordThread.start();
-
     }
 
     public void stopAAC() {
@@ -131,7 +130,7 @@ public class RecorderManager {
             mCameraDataHandler = new Handler(mCameraRecordTherad.getLooper(), mCameraCallback);
         }
 
-        initH264Encoder();
+//        initH264Encoder();
     }
 
     public void stopRecordH264() {
@@ -151,6 +150,9 @@ public class RecorderManager {
 
     public void startPushRtmp() {
         nativeStartPushRtmp();
+
+        startRecordAAC();
+        startRecordH264();
     }
 
 
@@ -179,11 +181,11 @@ public class RecorderManager {
                     } else {
                         Mog.e("receive audioData empty");
                     }
-                    try {
-                        Thread.sleep(40);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+//                    try {
+//                        Thread.sleep(40);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
                 }
             }
         }

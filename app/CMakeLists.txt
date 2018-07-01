@@ -107,6 +107,14 @@ set_target_properties(swscale
                         IMPORTED_LOCATION
                         ${CMAKE_SOURCE_DIR}/libs/armeabi/libswscale.so)
 
+add_library(yuv
+                SHARED
+                IMPORTED)
+
+set_target_properties(yuv
+                        PROPERTIES
+                        IMPORTED_LOCATION
+                        ${CMAKE_SOURCE_DIR}/libs/armeabi/libyuv.so)
 
 add_library( # 库名称
              record_util
@@ -126,7 +134,32 @@ add_library( # 库名称
               )
 
 
+add_library( # 库名称
+             rtmp_lib
 
+             # 动态库，生成so文件
+             SHARED
+
+             # 源码
+             ${CPP_DIR}/ffmpeg/cmdutils.c
+             ${CPP_DIR}/ffmpeg/ffmpeg.c
+             ${CPP_DIR}/ffmpeg/ffmpeg_filter.c
+             ${CPP_DIR}/ffmpeg/ffmpeg_opt.c
+             ${CPP_DIR}/RtmpLib.cpp
+             ${CPP_DIR}/audio/AACEncoder.cpp
+             ${CPP_DIR}/video/H264Encoder.cpp
+             ${CPP_DIR}/RtmpStreamer.cpp
+              )
+
+add_library( # 库名称
+           native_crash_lib
+
+           # 动态库，生成so文件
+           SHARED
+
+           # 源码
+           ${CPP_DIR}/util/NativeCrashHandler.cpp
+            )
 
 target_link_libraries(
                        record_util
@@ -136,5 +169,21 @@ target_link_libraries(
                        avutil
                        swresample
                        swscale
-
+                       yuv
                        ${log-lib} )
+
+target_link_libraries(
+                       rtmp_lib
+                       avcodec
+                       avfilter
+                       avformat
+                       avutil
+                       swresample
+                       swscale
+                       yuv
+                       ${log-lib} )
+
+target_link_libraries(
+                     native_crash_lib
+                     ${log-lib} )
+

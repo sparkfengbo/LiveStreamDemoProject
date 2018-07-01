@@ -103,7 +103,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         Camera.Parameters parameters = camera.getParameters();
 
         //default is NV21
-        parameters.setPreviewFormat(ImageFormat.YV12);
+        parameters.setPreviewFormat(ImageFormat.NV21);
 
         List<Camera.Size> sizes = parameters.getSupportedPreviewSizes();
         Camera.Size optimalSize = getOptimalPreviewSize(sizes, getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
@@ -160,7 +160,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private Camera.PreviewCallback mPreviewCallback = new Camera.PreviewCallback() {
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
-            Mog.d("" + data.length);
+//            Mog.d("" + data.length);
             if(mOnFrameDataCallback != null) {
                 mOnFrameDataCallback.onFrameData(data, data.length, mRotate);
             }
@@ -169,9 +169,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
-        Mog.e("surfaceCreated");
+        Mog.i("surfaceCreated");
         if(mCamera != null) {
-            Mog.e("mCamera not null");
             try {
                 mCamera.setPreviewDisplay(mSurfaceHolder);
                 mCamera.setPreviewCallback(mPreviewCallback);
@@ -183,8 +182,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-        Mog.e("surfaceChanged");
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        Mog.i("surfaceChanged");
     }
 
     @Override
@@ -210,5 +209,4 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mCamera = null;
         }
     }
-
 }

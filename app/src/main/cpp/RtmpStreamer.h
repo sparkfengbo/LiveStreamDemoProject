@@ -21,37 +21,38 @@ extern "C" {
 
 class RtmpStreamer {
 
-
 private:
 
-    AACEncoder *aacEncoder;
+    //AAC编码器
+    AACEncoder *audioEncoder;
 
-    H264Encoder *h264Encoder;
+    //H264编码器
+    H264Encoder *videoEncoder;
 
+    //音频流
     AVStream *audioStream;
 
+    //视频流
     AVStream *videoStream;
 
     AVCodecContext *audioCodecContext;
 
     AVCodecContext *videoCodecContext;
 
-    AVFormatContext *formatContext = NULL;
+    AVFormatContext *formatContext;
 
     int videoStreamIndex;
 
     int audioStreamIndex;
 
-    char *outputUrl;
+    const char *outputUrl;
 
     int is_end = 0;
-
-    RTMP *rtmpHandler;
 
     ~ RtmpStreamer();
 
 public:
-    int init(char *url);
+    int init(const char *url);
 
     int setAudioEncoder(AACEncoder *audioEncoder);
 
@@ -65,11 +66,11 @@ public:
 
     int pushFrame(FrameData *data, int streamIndex);
 
-    static void *writeHead(void *pObj);
+    static void* writeHead(void *pObj);
 
-    static void *addAudioEncodeThread(void *pObj);
+    static void* addAudioEncodeThread(void *pObj);
 
-    static void *addVideoEncodeThread(void *pObj);
+    static void* addVideoEncodeThread(void *pObj);
 };
 
 #endif //LIVESTREAMDEMOPROJECT_RTMPSTREAMER_H

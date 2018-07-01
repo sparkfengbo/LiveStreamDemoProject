@@ -149,7 +149,7 @@ void RTMPSender::sendH264File(char *filepath) {
 
 
 RTMPSender::RTMPSender(RecordConfig *config) {
-    url = config->rtmpUrl;
+//    url = config->rtmpUrl;
 }
 
 RTMPSender::~RTMPSender() {

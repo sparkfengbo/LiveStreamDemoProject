@@ -1,14 +1,11 @@
 //
 // Created by fengbo on 2018/5/9.
 //
-extern "C" {
-#include "libavutil/opt.h"
-#include "libavformat/avformat.h"
-}
 #include "H264Encoder.h"
-#include "../util/LogUtils.h"
 
-H264Encoder::H264Encoder(RecordConfig *config) {
+using namespace libyuv;
+
+H264Encoder::H264Encoder(VideoConfig *config) {
     LOGI("new h264 encoder");
     recordConfig = config;
 }
@@ -16,11 +13,11 @@ H264Encoder::H264Encoder(RecordConfig *config) {
 int H264Encoder::initH264Encoder() {
     LOGI("start init H264 Encoder");
 
-    size_t path_length = strlen(recordConfig->video_path);
-
-    char *out_file = (char *) malloc(path_length + 1);
-
-    strcpy(out_file, recordConfig->video_path);
+//    size_t path_length = strlen(recordConfig->video_path);
+//
+//    char *out_file = (char *) malloc(path_length + 1);
+//
+//    strcpy(out_file, recordConfig->video_path);
 
     av_register_all();
 
@@ -55,11 +52,17 @@ int H264Encoder::initH264Encoder() {
     }
 
     pCodecCtx = avcodec_alloc_context3(pCodec);
+
     pCodecCtx->codec_id = AV_CODEC_ID_H264;
     pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
 
     pCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
 
+    pCodecCtx->width = recordConfig->video_out_width;
+    pCodecCtx->height = recordConfig->video_out_height;
+
+//    pCodecCtx->width = recordConfig->video_out_width;
+//    pCodecCtx->height = recordConfig->video_out_height;
     //Android 摄像头会有旋转
     if (recordConfig->rotate_type == recordConfig->CONST_ROTATE_0
         || recordConfig->rotate_type ==  recordConfig->CONST_ROTATE_180) {
@@ -90,6 +93,26 @@ int H264Encoder::initH264Encoder() {
 
     pCodecCtx->max_b_frames = 0; //最大B帧个数
 
+
+
+    pCodecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER; //全局参数
+    pCodecCtx->bit_rate = 100 * 1024 * 8;//压缩后每秒视频的bit位大小 50kB
+//    videoCodecContext->width = videoCapture->GetVideoEncodeArgs()->out_height;
+//    videoCodecContext->height = videoCapture->GetVideoEncodeArgs()->out_width;
+    pCodecCtx->framerate = {25, 1};
+    pCodecCtx->gop_size = 50;
+    pCodecCtx->max_b_frames = 0;
+    pCodecCtx->qmin = 10;
+    pCodecCtx->qmax = 50;
+    pCodecCtx->time_base = {1, 1000000};//AUDIO VIDEO 两边时间基数要相同
+
+    pCodecCtx->level = 41;
+    pCodecCtx->me_method = ME_HEX;
+    pCodecCtx->refs = 1;
+    pCodecCtx->chromaoffset = 2;
+
+
+
     AVDictionary *params = 0;
 
     av_dict_set(&params, "preset", "ultrafast", 0);
@@ -114,7 +137,7 @@ int H264Encoder::initH264Encoder() {
 
     uint8_t *buf = (uint8_t *) av_malloc(picture_size);
 
-    avpicture_fill((AVPicture *) pFrame, buf, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height);
+//    avpicture_fill((AVPicture *) pFrame, buf, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height);
 
 //    avformat_write_header(pFormatCtx, NULL);
 
@@ -136,62 +159,106 @@ int H264Encoder::pushOneFrame(uint8_t *frame) {
     //YUV存储格式决定
     uint8_t *new_buf = (uint8_t *) malloc(in_frame_size_bits);
     memcpy(new_buf, frame, in_frame_size_bits);
-    frame_queue.push(new_buf);
+
+    FrameData *frameData = new FrameData();
+    frameData->data = new_buf;
+    frameData->pts = av_gettime();
+    frame_queue.push(frameData);
+//    LOGI("pushOneFrame");
     return 0;
 }
 
 void* H264Encoder::startLoopEncodeInThread(void *obj) {
-    LOGI("start encode video");
-
-    H264Encoder *h264Encoder = (H264Encoder *) obj;
-    while (!h264Encoder->is_end || !h264Encoder->frame_queue.empty()) {
-        if (h264Encoder->frame_queue.empty()) {
-            continue;
-        }
-
-        uint8_t *picture_buf = *h264Encoder->frame_queue.wait_and_pop().get();
-
-        h264Encoder->custom_filter(h264Encoder, picture_buf, h264Encoder->in_frame_size, h264Encoder->recordConfig->v_custom_format);
-
-        //TODO 这里不太懂
-        h264Encoder->pFrame->pts = h264Encoder->pts;
-        h264Encoder->pts++;
-
-        int got_frame = 0;
-
-        int ret = avcodec_encode_video2(h264Encoder->pCodecCtx, &h264Encoder->pkt, h264Encoder->pFrame, &got_frame);
-
-        if (ret < 0) {
-            LOGE("Fail encode video!");
-        }
-
-//        if (got_frame == 1) {
-//            h264Encoder->pkt.stream_index = h264Encoder->video_st->index;
-//            h264Encoder->frameCnt++;
-//            ret = av_write_frame(h264Encoder->pFormatCtx, &h264Encoder->pkt);
-//            av_free_packet(&h264Encoder->pkt);
+//    LOGI("start encode video");
+//
+//    H264Encoder *h264Encoder = (H264Encoder *) obj;
+//    while (!h264Encoder->is_end || !h264Encoder->frame_queue.empty()) {
+//        if (h264Encoder->frame_queue.empty()) {
+//            continue;
 //        }
-        delete(picture_buf);
-    }
-
-    if (h264Encoder->is_end) {
-        LOGI("END encoding");
-        h264Encoder->endEncoder();
-        delete h264Encoder;
-    }
+//
+//        uint8_t *picture_buf = *h264Encoder->frame_queue.wait_and_pop().get();
+//
+//        h264Encoder->custom_filter(h264Encoder, picture_buf, h264Encoder->in_frame_size, h264Encoder->recordConfig->v_custom_format);
+//
+//        //TODO 这里不太懂
+//        h264Encoder->pFrame->pts = h264Encoder->pts;
+//        h264Encoder->pts++;
+//
+//        int got_frame = 0;
+//
+//        int ret = avcodec_encode_video2(h264Encoder->pCodecCtx, &h264Encoder->pkt, h264Encoder->pFrame, &got_frame);
+//
+//        if (ret < 0) {
+//            LOGE("Fail encode video!");
+//        }
+//
+////        if (got_frame == 1) {
+////            h264Encoder->pkt.stream_index = h264Encoder->video_st->index;
+////            h264Encoder->frameCnt++;
+////            ret = av_write_frame(h264Encoder->pFormatCtx, &h264Encoder->pkt);
+////            av_free_packet(&h264Encoder->pkt);
+////        }
+//        delete(picture_buf);
+//    }
+//
+//    if (h264Encoder->is_end) {
+//        LOGI("END encoding");
+//        h264Encoder->endEncoder();
+//        delete h264Encoder;
+//    }
     return 0;
 }
 
 int H264Encoder::startEncodeForRtmp(FrameData *data) {
+    std::lock_guard<std::mutex> lk(mut);
 
     int ret = 0;
 
     uint8_t *picture_buf = data->data;
 
-    custom_filter(this, picture_buf, in_frame_size, recordConfig->v_custom_format);
+    int w = recordConfig->video_in_width;
+    int h = recordConfig->video_in_height;
 
-    pFrame->pts = pts;
-    pts++;
+    uint8_t *dstI420 = (uint8_t *) malloc(w * h * 3 / 2);
+
+    NV21ToI420(picture_buf,               w,
+               picture_buf + (w * h),     w,
+               dstI420,                   w,
+               dstI420 + (w * h),         w / 2,
+               dstI420 + (w * h * 5 / 4), w / 2,
+               w, h);
+
+    uint8_t *rotate = (uint8_t *) malloc(w * h * 3 / 2);
+
+    I420Rotate(dstI420,                      w,
+               dstI420 + w * h,              w / 2,
+               dstI420 + (w * h * 5 / 4),    w / 2,
+               rotate,                       h,
+               rotate + (w * h),             h / 2,
+               rotate + (w * h * 5 / 4),     h / 2,
+               w, h,
+               kRotate270);
+
+    uint8_t *mirror = (uint8_t *) malloc(w * h * 3 / 2);
+
+    I420Mirror(rotate,                      w,
+               rotate + w * h,              w / 2,
+               rotate + (w * h * 5 / 4),    w / 2,
+               mirror,                      w,
+               mirror + (w * h),            w / 2,
+               mirror + (w * h * 5 / 4),    w / 2,
+               w, h);
+
+    av_image_fill_arrays(pFrame->data,
+                         pFrame->linesize, rotate,
+                         AV_PIX_FMT_YUV420P, pCodecCtx->width,
+                         pCodecCtx->height, 1);
+
+    pFrame->pts = data->pts;
+
+//    pFrame->pts = pts;
+//    pts++;
 
     int got_frame = 0;
 
@@ -200,8 +267,21 @@ int H264Encoder::startEncodeForRtmp(FrameData *data) {
     if (ret < 0) {
         LOGE("Fail encode video!");
     }
+    if (mirror) {
+        delete(mirror);
+    }
 
-    delete(data->data);
+    if (rotate) {
+        delete(rotate);
+    }
+
+    if (data->data) {
+        delete(data->data);
+    }
+
+    if (dstI420) {
+        delete(dstI420);
+    }
     data->avPacket = &pkt;
     return pkt.size;
 }

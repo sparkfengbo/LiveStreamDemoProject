@@ -6,6 +6,7 @@
 #include "video/H264Encoder.h"
 #include "RTMPSender.h"
 #include "RtmpStreamer.h"
+#include "data/VideoConfig.h"
 
 extern "C" {
 #include "ffmpeg/ffmpeg.h"
@@ -13,25 +14,24 @@ extern "C" {
 
 AACEncoder *audioEncoder;
 H264Encoder *h264Encoder;
+
+AACEncoder *tAudioEncoder;
+H264Encoder *tH264Encoder;
 RTMPSender *rtmpEncoder;
 RecordConfig *config;
-
-
-void setupRecordConfig() {
-
-}
 
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_com_sparkfengbo_ng_livestreamdemoproject_RecorderManager_nativeSendYUVData(JNIEnv *env, jobject instance,
                                                                                 jbyteArray data_) {
     jbyte *data = env->GetByteArrayElements(data_, NULL);
-//    LOGE("nativeSendYUVData");
-    if (h264Encoder == NULL) {
+//    LOGI("nativeSendYUVData");
+    if (tH264Encoder == NULL) {
         LOGE("nativeSendYUVData 264Encoder is NULL");
+        env->ReleaseByteArrayElements(data_, data, 0);
         return -1;
     }
-    int i = h264Encoder->pushOneFrame((uint8_t *) data);
+    int i = tH264Encoder->pushOneFrame((uint8_t *) data);
     env->ReleaseByteArrayElements(data_, data, 0);
     return i;
 }
@@ -41,12 +41,13 @@ JNIEXPORT jlong JNICALL
 Java_com_sparkfengbo_ng_livestreamdemoproject_RecorderManager_nativeSendPCMData(JNIEnv *env, jobject instance,
                                                                                 jbyteArray data_) {
     jbyte *data = env->GetByteArrayElements(data_, NULL);
-//    LOGI("nativeSendPCMData");
-    if (audioEncoder == NULL) {
-        LOGE("nativeSendPCMData audioEncoder is NULL");
+    LOGI("nativeSendPCMData");
+    if (tAudioEncoder == NULL) {
+//        LOGE("nativeSendPCMData audioEncoder is NULL");
+        env->ReleaseByteArrayElements(data_, data, 0);
         return -1;
     }
-    int i = audioEncoder->pushOneFrame((uint8_t *) data);
+    int i = tAudioEncoder->pushOneFrame((uint8_t *) data);
     env->ReleaseByteArrayElements(data_, data, 0);
     return i;
 }
@@ -80,9 +81,9 @@ Java_com_sparkfengbo_ng_livestreamdemoproject_RecorderManager_run(JNIEnv *env, j
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_sparkfengbo_ng_livestreamdemoproject_RecorderManager_initAACEncoder(JNIEnv *env, jobject instance) {
-    RecordConfig *config = new RecordConfig();
+    AudioConfig *config = new AudioConfig();
     config->audio_bit_rate = 64000;
-    config->audio_path = "/sdcard/DCIM/test.aac";
+    config->audio_out_path = "/sdcard/DCIM/test.aac";
     config->audio_sample_rate = 44100;
     audioEncoder = new AACEncoder(config);
     audioEncoder->initAAEncoder();
@@ -99,14 +100,14 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_sparkfengbo_ng_livestreamdemoproject_RecorderManager_initH264Encoder(JNIEnv *env, jobject instance) {
 
-    RecordConfig *config = new RecordConfig();
+    VideoConfig *config = new VideoConfig();
 //    1280*960
     config->video_in_width = 2048;
     config->video_in_height = 1080;
 
     config->video_out_width = 2048;
     config->video_out_height = 1080;
-    config->video_path = "/sdcard/DCIM/test-video.h264";
+    config->video_out_path = "/sdcard/DCIM/test-video.h264";
     config->video_frame_rate = 30;
     config->video_bit_rate = 1000000;
 //    config.v_custom_format;
@@ -153,37 +154,39 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_sparkfengbo_ng_livestreamdemoproject_RecorderManager_nativeStartPushRtmp(JNIEnv *env, jobject instance) {
 
-    // TODO
-    AACEncoder *tAudioEncoder;
-    H264Encoder *tH264Encoder;
     RtmpStreamer *rtmpStreamer;
 
-    RecordConfig *aacConfig = new RecordConfig();
+    AudioConfig *aacConfig = new AudioConfig();
+    aacConfig->isFileOut = false;
     aacConfig->audio_bit_rate = 64000;
-    aacConfig->audio_path = "/sdcard/DCIM/test.aac";
     aacConfig->audio_sample_rate = 44100;
     tAudioEncoder = new AACEncoder(aacConfig);
     tAudioEncoder->initAAEncoder();
 
 
-    RecordConfig *h264config = new RecordConfig();
+    VideoConfig *videoConfig = new VideoConfig();
 //    1280*960
-    h264config->video_in_width = 2048;
-    h264config->video_in_height = 1080;
+    videoConfig->video_in_width = 1280;
+    videoConfig->video_in_height = 960;
 
-    h264config->video_out_width = 2048;
-    h264config->video_out_height = 1080;
-    h264config->video_path = "/sdcard/DCIM/test-video.h264";
-    h264config->video_frame_rate = 30;
-    h264config->video_bit_rate = 1000000;
+    videoConfig->video_out_width = videoConfig->video_in_width;
+    videoConfig->video_out_height = videoConfig->video_in_height;
+//    h264config->video_out_width = 2048;
+//    h264config->video_out_height = 1080;
+
+//    videoConfig->video_out_width = 640;
+//    videoConfig->video_out_height = 480;
+
+    videoConfig->video_frame_rate = 30;
+    videoConfig->video_bit_rate = 1000000;
 //    config.v_custom_format;
-    h264config->rotate_type = config->CONST_ROTATE_90;
+    videoConfig->rotate_type = videoConfig->CONST_ROTATE_180;
 
-    tH264Encoder = new H264Encoder(h264config);
+    tH264Encoder = new H264Encoder(videoConfig);
     tH264Encoder->initH264Encoder();
 
     rtmpStreamer = new RtmpStreamer();
-    rtmpStreamer->init("rtmp://172.22.126.95:1935/test/live");
+    rtmpStreamer->init("rtmp://172.22.126.89:1935/test/live");
     rtmpStreamer->setAudioEncoder(tAudioEncoder);
     rtmpStreamer->setVideoEncoder(tH264Encoder);
     rtmpStreamer->startPush();
