@@ -5,9 +5,9 @@ import android.media.AudioFormat;
 /**
  * Created by fengbo on 2018/5/15.
  *
- * 录制时的配置信息
+ * RTMP推流的配置信息
  */
-public class RecordConfig {
+public class RtmpConfig {
     /**
      * 音频采样率
      */
@@ -16,7 +16,6 @@ public class RecordConfig {
     /**
      * 音频比特率
      */
-
     public static final int AUDIO_BIT_RATE = 64000;
     /**
      * 音频数据格式
@@ -29,9 +28,7 @@ public class RecordConfig {
     public static final int AUDIO_FORMAT_CHANNEL_FOR_RECORD = AudioFormat.CHANNEL_IN_MONO;
 
 
-
     public static final int VIDEO_FRAME_RATE = 30;
-
 
 
 }

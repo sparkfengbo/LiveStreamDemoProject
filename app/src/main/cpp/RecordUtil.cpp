@@ -26,14 +26,16 @@ Java_com_sparkfengbo_ng_livestreamdemoproject_RecorderManager_nativeSendYUVData(
                                                                                 jbyteArray data_) {
     jbyte *data = env->GetByteArrayElements(data_, NULL);
 //    LOGI("nativeSendYUVData");
-    if (tH264Encoder == NULL) {
-        LOGE("nativeSendYUVData 264Encoder is NULL");
-        env->ReleaseByteArrayElements(data_, data, 0);
-        return -1;
-    }
-    int i = tH264Encoder->pushOneFrame((uint8_t *) data);
+//    if (tH264Encoder == NULL) {
+//        LOGE("nativeSendYUVData 264Encoder is NULL");
+//        env->ReleaseByteArrayElements(data_, data, 0);
+//        return -1;
+//    }
+//    int i = tH264Encoder->pushOneFrame((uint8_t *) data);
     env->ReleaseByteArrayElements(data_, data, 0);
-    return i;
+//    return i;
+
+    return 0;
 }
 
 extern "C"
@@ -153,41 +155,41 @@ Java_com_sparkfengbo_ng_livestreamdemoproject_RecorderManager_muxMP4(JNIEnv *env
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_sparkfengbo_ng_livestreamdemoproject_RecorderManager_nativeStartPushRtmp(JNIEnv *env, jobject instance) {
-
-    RtmpStreamer *rtmpStreamer;
-
-    AudioConfig *aacConfig = new AudioConfig();
-    aacConfig->isFileOut = false;
-    aacConfig->audio_bit_rate = 64000;
-    aacConfig->audio_sample_rate = 44100;
-    tAudioEncoder = new AACEncoder(aacConfig);
-    tAudioEncoder->initAAEncoder();
-
-
-    VideoConfig *videoConfig = new VideoConfig();
-//    1280*960
-    videoConfig->video_in_width = 1280;
-    videoConfig->video_in_height = 960;
-
-    videoConfig->video_out_width = videoConfig->video_in_width;
-    videoConfig->video_out_height = videoConfig->video_in_height;
-//    h264config->video_out_width = 2048;
-//    h264config->video_out_height = 1080;
-
-//    videoConfig->video_out_width = 640;
-//    videoConfig->video_out_height = 480;
-
-    videoConfig->video_frame_rate = 30;
-    videoConfig->video_bit_rate = 1000000;
-//    config.v_custom_format;
-    videoConfig->rotate_type = videoConfig->CONST_ROTATE_180;
-
-    tH264Encoder = new H264Encoder(videoConfig);
-    tH264Encoder->initH264Encoder();
-
-    rtmpStreamer = new RtmpStreamer();
-    rtmpStreamer->init("rtmp://172.22.126.89:1935/test/live");
-    rtmpStreamer->setAudioEncoder(tAudioEncoder);
-    rtmpStreamer->setVideoEncoder(tH264Encoder);
-    rtmpStreamer->startPush();
+//
+//    RtmpStreamer *rtmpStreamer;
+//
+//    AudioConfig *aacConfig = new AudioConfig();
+//    aacConfig->isFileOut = false;
+//    aacConfig->audio_bit_rate = 64000;
+//    aacConfig->audio_sample_rate = 44100;
+//    tAudioEncoder = new AACEncoder(aacConfig);
+//    tAudioEncoder->initAAEncoder();
+//
+//
+//    VideoConfig *videoConfig = new VideoConfig();
+////    1280*960
+//    videoConfig->video_in_width = 1280;
+//    videoConfig->video_in_height = 960;
+//
+//    videoConfig->video_out_width = videoConfig->video_in_width;
+//    videoConfig->video_out_height = videoConfig->video_in_height;
+////    h264config->video_out_width = 2048;
+////    h264config->video_out_height = 1080;
+//
+////    videoConfig->video_out_width = 640;
+////    videoConfig->video_out_height = 480;
+//
+//    videoConfig->video_frame_rate = 30;
+//    videoConfig->video_bit_rate = 1000000;
+////    config.v_custom_format;
+//    videoConfig->rotate_type = videoConfig->CONST_ROTATE_180;
+//
+//    tH264Encoder = new H264Encoder(videoConfig);
+//    tH264Encoder->initH264Encoder();
+//
+//    rtmpStreamer = new RtmpStreamer();
+//    rtmpStreamer->init("rtmp://172.22.126.89:1935/test/live");
+//    rtmpStreamer->setAudioEncoder(tAudioEncoder);
+//    rtmpStreamer->setVideoEncoder(tH264Encoder);
+//    rtmpStreamer->startPush();
 }

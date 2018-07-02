@@ -25,9 +25,7 @@
  * https://github.com/javandoc/MediaPlus
  */
 
-package com.sparkfengbo.ng.livestreamdemoproject.nativehandler;
-
-import com.sparkfengbo.ng.livestreamdemoproject.util.Mog;
+package com.sparkfengbo.ng.livestreamdemoproject.util;
 
 import android.content.Context;
 import android.content.Intent;
@@ -52,7 +50,7 @@ public class NativeCrashHandler {
             NativeError.natSt = stack;
         }
 
-        Mog.e("reason : " + reason + "stack trace : " + stack.toString() + " thread id : "  + threadID);
+        FLog.e("reason : " + reason + "stack trace : " + stack.toString() + " thread id : "  + threadID);
 
         NativeError e = new NativeError(reason, threadID);
         Intent intent = new Intent(this.ctx, NativeCrashActivity.class);

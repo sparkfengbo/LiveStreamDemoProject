@@ -1,7 +1,7 @@
-package com.sparkfengbo.ng.livestreamdemoproject;
+package com.sparkfengbo.ng.livestreamdemoproject.base;
 
-import com.sparkfengbo.ng.livestreamdemoproject.recorder.RecordConfig;
-import com.sparkfengbo.ng.livestreamdemoproject.util.Mog;
+import com.sparkfengbo.ng.livestreamdemoproject.recorder.RtmpConfig;
+import com.sparkfengbo.ng.livestreamdemoproject.util.FLog;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
@@ -16,29 +16,34 @@ import java.util.List;
 /**
  * Created by fengbo on 2018/5/2.
  *
- * 摄像头预览画面
+ * 使用android.hardware.Camera 进行摄像头预览画面
  */
-
-public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callback{
+public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback{
 
     private Context mContext;
     private Camera mCamera;
     private SurfaceHolder mSurfaceHolder;
+    //是否是前置摄像头
     private boolean mFrontCamera;
+    //旋转角度
     private int mRotate;
     private OnFrameDataCallback mOnFrameDataCallback;
+    //相机最佳Width
+    private int mOptimalSizeWidth;
+    //相机最佳Height
+    private int mOptimalSizeHeight;
 
-    public Camera2Preview(Context context) {
+    public CameraPreview(Context context) {
         super(context);
         init(context);
     }
 
-    public Camera2Preview(Context context, AttributeSet attrs) {
+    public CameraPreview(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context);
     }
 
-    public Camera2Preview(Context context, AttributeSet attrs, int defStyleAttr) {
+    public CameraPreview(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context);
     }
@@ -50,30 +55,17 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
         mSurfaceHolder.addCallback(this);
     }
 
-    public void switchCamera() {
-        try {
-            mCamera.stopPreview();
-            mCamera.release();
-            mCamera = null;
-
-            mCamera = getCamera(!mFrontCamera);
-            mCamera.setPreviewDisplay(mSurfaceHolder);
-            mCamera.setPreviewCallback(mPreviewCallback);
-            mCamera.startPreview();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     private Camera getCamera(){
         return getCamera(false);
     }
 
     private Camera getCamera(boolean isBack) {
         Camera camera = null;
-        int cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
+        int cameraId;
         if(isBack) {
             cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+        } else {
+            cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
         }
 
         mFrontCamera = cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT;
@@ -84,9 +76,8 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
             if(info.facing == cameraId) {
                 try {
                     camera = Camera.open(cameraId);
-
                 } catch (RuntimeException ex) {
-
+                    ex.printStackTrace();
                 }
                 break;
             }
@@ -102,21 +93,20 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
 
         Camera.Parameters parameters = camera.getParameters();
 
-        //default is NV21
-        parameters.setPreviewFormat(ImageFormat.YV12);
+        //default is NV21,使用NV21格式，底层C代码使用libyuv进行格式转换比较方便
+        parameters.setPreviewFormat(ImageFormat.NV21);
 
         List<Camera.Size> sizes = parameters.getSupportedPreviewSizes();
         Camera.Size optimalSize = getOptimalPreviewSize(sizes, getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
 
+        mOptimalSizeWidth = optimalSize.width;
+        mOptimalSizeHeight = optimalSize.height;
+
         parameters.setPreviewSize(optimalSize.width, optimalSize.height);
+        parameters.setPreviewFrameRate(RtmpConfig.VIDEO_FRAME_RATE);
 
-
-        parameters.setPreviewFrameRate(RecordConfig.VIDEO_FRAME_RATE);
-
-
-        Mog.i("width : " + optimalSize.width + "   height : "  +optimalSize.height);
+        FLog.i("OptimalSize Width : " + optimalSize.width + " OptimalSize Height : "  +optimalSize.height);
         camera.setParameters(parameters);
-
         camera.setPreviewCallback(mPreviewCallback);
         return camera;
     }
@@ -160,7 +150,7 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
     private Camera.PreviewCallback mPreviewCallback = new Camera.PreviewCallback() {
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
-//            Mog.d("" + data.length);
+            FLog.v("onPreviewFrame : " + data.length);
             if(mOnFrameDataCallback != null) {
                 mOnFrameDataCallback.onFrameData(data, data.length, mRotate);
             }
@@ -169,7 +159,7 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
-        Mog.i("surfaceCreated");
+        FLog.i("surfaceCreated");
         if(mCamera != null) {
             try {
                 mCamera.setPreviewDisplay(mSurfaceHolder);
@@ -183,30 +173,63 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        Mog.i("surfaceChanged");
+        FLog.i("surfaceChanged");
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-        Mog.e("surfaceDestroyed");
+        FLog.i("surfaceDestroyed");
         if (mCamera != null) {
             mCamera.stopPreview();
         }
     }
 
+    /**
+     * 设置获取YUV数据回调
+     * @param callback
+     */
     public void setCallback(OnFrameDataCallback callback) {
         mOnFrameDataCallback = callback;
     }
 
-    interface OnFrameDataCallback {
-        void onFrameData(byte[] data, int length, int rotate);
+    /**
+     * 切换摄像头
+     */
+    public void switchCamera() {
+        try {
+            mCamera.stopPreview();
+            mCamera.release();
+            mCamera = null;
+
+            mCamera = getCamera(!mFrontCamera);
+            mCamera.setPreviewDisplay(mSurfaceHolder);
+            mCamera.setPreviewCallback(mPreviewCallback);
+            mCamera.startPreview();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
+    /**
+     * 释放资源
+     */
     public void release () {
         if(mCamera != null) {
             mCamera.stopPreview();
             mCamera.release();
             mCamera = null;
         }
+    }
+
+    /**
+     * Activity等外部获取YUV数据回调接口
+     */
+    public interface OnFrameDataCallback {
+        /**
+         * @param data      YUV数据
+         * @param length    数据长度
+         * @param rotate    旋转角度
+         */
+        void onFrameData(byte[] data, int length, int rotate);
     }
 }

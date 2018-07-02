@@ -1,7 +1,7 @@
-package com.sparkfengbo.ng.livestreamdemoproject;
+package com.sparkfengbo.ng.livestreamdemoproject.recorder;
 
-import com.sparkfengbo.ng.livestreamdemoproject.recorder.AudioRecorder;
-import com.sparkfengbo.ng.livestreamdemoproject.util.Mog;
+import com.sparkfengbo.ng.livestreamdemoproject.base.CameraPreview;
+import com.sparkfengbo.ng.livestreamdemoproject.util.FLog;
 
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -115,7 +115,7 @@ public class RecorderManager {
     }
 
     public void stopAAC() {
-        Mog.i("stop encode AAC");
+        FLog.i("stop encode AAC");
         stopEncodeAAC();
     }
 
@@ -169,17 +169,17 @@ public class RecorderManager {
                 return;
             }
             boolean isStart = mAudioRecorder.startRecord();
-            Mog.i("AudioRecordThread isStart : "  + isStart);
+            FLog.i("AudioRecordThread isStart : "  + isStart);
             if (!isStart) {
                 return;
             } else {
-                Mog.i("attemp read  audio data");
+                FLog.i("attemp read  audio data");
                 while (true) {
                     byte[] audioData = mAudioRecorder.readData();
                     if (audioData != null) {
                         nativeSendPCMData(audioData);
                     } else {
-                        Mog.e("receive audioData empty");
+                        FLog.e("receive audioData empty");
                     }
 //                    try {
 //                        Thread.sleep(40);

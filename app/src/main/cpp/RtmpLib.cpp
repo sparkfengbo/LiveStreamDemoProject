@@ -6,24 +6,15 @@
 #include "RtmpStreamer.h"
 
 RtmpStreamer *rtmpStreamer;
-AACEncoder *audioEncoder;
-H264Encoder *videoEncoder;
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_sparkfengbo_ng_livestreamdemoproject_RtmpController_nativeStartPush(JNIEnv *env, jobject instance,
-                                                                             jstring url_) {
-    int ret = 0;
+Java_com_sparkfengbo_ng_livestreamdemoproject_rtmptest_RTMPController_nativeStartPush(JNIEnv *env, jobject instance,
+                                                                                      jstring url_) {
     AudioConfig *aacConfig = new AudioConfig();
     aacConfig->isFileOut = false;
     aacConfig->audio_bit_rate = 64000;
     aacConfig->audio_sample_rate = 44100;
-    audioEncoder = new AACEncoder(aacConfig);
-    ret = audioEncoder->initAAEncoder();
-    if (ret < 0) {
-        return false;
-    }
-    LOGI("AACEncoder init finish");
 
     VideoConfig *videoConfig = new VideoConfig();
 
@@ -40,50 +31,46 @@ Java_com_sparkfengbo_ng_livestreamdemoproject_RtmpController_nativeStartPush(JNI
     videoConfig->video_frame_rate = 30;
     videoConfig->video_bit_rate = 1000000;
     videoConfig->rotate_type = videoConfig->CONST_ROTATE_90;
-    videoEncoder = new H264Encoder(videoConfig);
-    ret = videoEncoder->initH264Encoder();
-    if (ret < 0) {
-        return false;
-    }
-    LOGI("H264Encoder init finish");
 
     const char *url = env->GetStringUTFChars(url_, 0);
     rtmpStreamer = new RtmpStreamer();
-    ret = rtmpStreamer->init(url);
+    int ret = rtmpStreamer->init(url, videoConfig, aacConfig);
     if (ret < 0) {
         return false;
     }
     env->ReleaseStringUTFChars(url_, url);
     LOGI("RtmpStreamer init finish");
 
-    rtmpStreamer->setAudioEncoder(audioEncoder);
-    rtmpStreamer->setVideoEncoder(videoEncoder);
-
     ret = rtmpStreamer->startPush();
     if (ret < 0) {
         return false;
     }
-
     return true;
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_sparkfengbo_ng_livestreamdemoproject_RtmpController_nativePushPCMData(JNIEnv *env, jobject instance,
-                                                                               jbyteArray data_) {
+Java_com_sparkfengbo_ng_livestreamdemoproject_rtmptest_RTMPController_nativePushPCMData(JNIEnv *env, jobject instance,
+                                                                                        jbyteArray data_) {
     jbyte *data = env->GetByteArrayElements(data_, NULL);
-    int i = 0;
-//    int i = audioEncoder->pushOneFrame((uint8_t *) data);
+    int i = -1;
+//    if (rtmpStreamer->getAudioEncoder()) {
+//        i = rtmpStreamer->getAudioEncoder()->pushOneFrame((uint8_t *) data);
+//    }
     env->ReleaseByteArrayElements(data_, data, 0);
     return i;
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_sparkfengbo_ng_livestreamdemoproject_RtmpController_nativePushYUVData(JNIEnv *env, jobject instance,
-                                                                               jbyteArray data_) {
+Java_com_sparkfengbo_ng_livestreamdemoproject_rtmptest_RTMPController_nativePushYUVData(JNIEnv *env, jobject instance,
+                                                                                        jbyteArray data_, jint length) {
     jbyte *data = env->GetByteArrayElements(data_, NULL);
-    int i = videoEncoder->pushOneFrame((uint8_t *) data);
+    int i = -1;
+    if (rtmpStreamer->getVideoEncoder()) {
+        i = rtmpStreamer->getVideoEncoder()->pushOneFrame((uint8_t *) data, length);
+    }
     env->ReleaseByteArrayElements(data_, data, 0);
     return i;
 }
+

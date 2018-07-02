@@ -19,7 +19,6 @@ int H264Encoder::initH264Encoder() {
 //
 //    strcpy(out_file, recordConfig->video_path);
 
-    av_register_all();
 
 //    pFormatCtx = avformat_alloc_context();
 //
@@ -41,6 +40,9 @@ int H264Encoder::initH264Encoder() {
 //
 //    av_dump_format(pFormatCtx, 0, out_file, 1);
 
+
+    av_register_all();
+
     //指定libx264进行编码
     pCodec = avcodec_find_encoder_by_name("libx264");
 
@@ -55,14 +57,7 @@ int H264Encoder::initH264Encoder() {
 
     pCodecCtx->codec_id = AV_CODEC_ID_H264;
     pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
-
     pCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
-
-    pCodecCtx->width = recordConfig->video_out_width;
-    pCodecCtx->height = recordConfig->video_out_height;
-
-//    pCodecCtx->width = recordConfig->video_out_width;
-//    pCodecCtx->height = recordConfig->video_out_height;
     //Android 摄像头会有旋转
     if (recordConfig->rotate_type == recordConfig->CONST_ROTATE_0
         || recordConfig->rotate_type ==  recordConfig->CONST_ROTATE_180) {
@@ -73,51 +68,25 @@ int H264Encoder::initH264Encoder() {
         pCodecCtx->height = recordConfig->video_out_width;
     }
 
-    pCodecCtx->bit_rate = recordConfig->video_bit_rate;
-    pCodecCtx->gop_size = 40;
-    pCodecCtx->thread_count = 12;
-
-    //media plus
-    pCodecCtx->thread_count = 12;
-    pCodecCtx->level = 41;
-
-
-    pCodecCtx->time_base.num = 1;
-    pCodecCtx->time_base.den = recordConfig->video_frame_rate;
-    pCodecCtx->refs = 1;
-
-
-    //TODO 搞清楚这些字段的含义
-    pCodecCtx->qmin = 10;
-    pCodecCtx->qmax = 51;
-
-    pCodecCtx->max_b_frames = 0; //最大B帧个数
-
-
-
-    pCodecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER; //全局参数
-    pCodecCtx->bit_rate = 100 * 1024 * 8;//压缩后每秒视频的bit位大小 50kB
-//    videoCodecContext->width = videoCapture->GetVideoEncodeArgs()->out_height;
-//    videoCodecContext->height = videoCapture->GetVideoEncodeArgs()->out_width;
-    pCodecCtx->framerate = {25, 1};
     pCodecCtx->gop_size = 50;
-    pCodecCtx->max_b_frames = 0;
+    pCodecCtx->thread_count = 12;
+    pCodecCtx->max_b_frames = 0; //最大B帧个数
     pCodecCtx->qmin = 10;
     pCodecCtx->qmax = 50;
+    pCodecCtx->bit_rate = 100 * 1024 * 8;
+    pCodecCtx->framerate = {25, 1};
+
+//    pCodecCtx->level = 41;
+//    pCodecCtx->refs = 1;
+//    pCodecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER; //全局参数
+//    pCodecCtx->bit_rate = recordConfig->video_bit_rate;
+//    pCodecCtx->time_base.num = 1;
+//    pCodecCtx->time_base.den = recordConfig->video_frame_rate;
     pCodecCtx->time_base = {1, 1000000};//AUDIO VIDEO 两边时间基数要相同
 
-    pCodecCtx->level = 41;
-    pCodecCtx->me_method = ME_HEX;
-    pCodecCtx->refs = 1;
-    pCodecCtx->chromaoffset = 2;
-
-
-
     AVDictionary *params = 0;
-
-    av_dict_set(&params, "preset", "ultrafast", 0);
-
-    av_dict_set(&params, "profile", "baseline", 0);
+    av_dict_set(&params, "preset" , "ultrafast" , 0);
+    av_dict_set(&params, "profile", "baseline"  , 0);
 
     int state = avcodec_open2(pCodecCtx, pCodec, &params);
 
@@ -129,42 +98,82 @@ int H264Encoder::initH264Encoder() {
     }
 
     pFrame = av_frame_alloc();
-
-    picture_size = avpicture_get_size(pCodecCtx->pix_fmt, pCodecCtx->width,
-    pCodecCtx->height);
-
-    LOGI("picture size : %d", picture_size);
-
-    uint8_t *buf = (uint8_t *) av_malloc(picture_size);
-
-//    avpicture_fill((AVPicture *) pFrame, buf, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height);
-
-//    avformat_write_header(pFormatCtx, NULL);
-
-    av_new_packet(&pkt, picture_size);
-
-    out_y_size = pCodecCtx->width * pCodecCtx->height;
-
-    in_frame_size = recordConfig->video_in_height * recordConfig->video_in_width;
-
-    in_frame_size_bits = in_frame_size * 3 /2;
-
     is_end = 0;
+
+//    picture_size = avpicture_get_size(pCodecCtx->pix_fmt, pCodecCtx->width,pCodecCtx->height);
+//    LOGI("picture size : %d", picture_size);
+//    uint8_t *buf = (uint8_t *) av_malloc(picture_size);
+//    avpicture_fill((AVPicture *) pFrame, buf, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height);
+//    avformat_write_header(pFormatCtx, NULL);
+//    av_new_packet(&pkt, picture_size);
+//    out_y_size = pCodecCtx->width * pCodecCtx->height;
+//    in_frame_size = recordConfig->video_in_height * recordConfig->video_in_width;
+//    in_frame_size_bits = in_frame_size * 3 / 2; //NV21 YUV420P 1.5B
 //    pthread_create(&thread, NULL, H264Encoder::startLoopEncodeInThread, this);
     LOGI("video encoder init finish");
     return 0;
 }
 
-int H264Encoder::pushOneFrame(uint8_t *frame) {
+int H264Encoder::pushOneFrame(uint8_t *frame, int length) {
     //YUV存储格式决定
-    uint8_t *new_buf = (uint8_t *) malloc(in_frame_size_bits);
-    memcpy(new_buf, frame, in_frame_size_bits);
+    uint8_t *new_buf = (uint8_t *) malloc(length);
+    memcpy(new_buf, frame, length);
+
+    int w = recordConfig->video_in_width;
+    int h = recordConfig->video_in_height;
+
+    uint8_t *dstI420 = (uint8_t *) malloc(w * h * 3 / 2);
+
+    NV21ToI420(new_buf,                      w,
+               new_buf + (w * h),            w,
+               dstI420,                      w,
+               dstI420 + (w * h),            w / 2,
+               dstI420 + (w * h * 5 / 4),    w / 2,
+               w, h);
+
+    if (new_buf) {
+        delete(new_buf);
+    }
+
+    uint8_t *rotate = (uint8_t *) malloc(w * h * 3 / 2);
+
+    I420Rotate(dstI420,                      w,
+               dstI420 + w * h,              w / 2,
+               dstI420 + (w * h * 5 / 4),    w / 2,
+               rotate,                       h,
+               rotate + (w * h),             h / 2,
+               rotate + (w * h * 5 / 4),     h / 2,
+               w, h,
+               kRotate270);
+
+    if (dstI420) {
+        delete(dstI420);
+    }
+
+    //TODO 镜像计算错误
+    uint8_t *mirror = (uint8_t *) malloc(w * h * 3 / 2);
+
+    I420Mirror(rotate,                      w,
+               rotate + w * h,              w / 2,
+               rotate + (w * h * 5 / 4),    w / 2,
+               mirror,                      h,
+               mirror + (w * h),            h / 2,
+               mirror + (w * h * 5 / 4),    h / 2,
+               w, h);
 
     FrameData *frameData = new FrameData();
-    frameData->data = new_buf;
+    frameData->data = rotate;
     frameData->pts = av_gettime();
     frame_queue.push(frameData);
-//    LOGI("pushOneFrame");
+
+//    if (rotate) {
+//        delete(rotate);
+//    }
+
+    if (mirror) {
+        delete(mirror);
+    }
+
     return 0;
 }
 
@@ -210,48 +219,13 @@ void* H264Encoder::startLoopEncodeInThread(void *obj) {
     return 0;
 }
 
-int H264Encoder::startEncodeForRtmp(FrameData *data) {
+int H264Encoder::startEncodeForRTMP(FrameData *data) {
     std::lock_guard<std::mutex> lk(mut);
 
     int ret = 0;
 
-    uint8_t *picture_buf = data->data;
-
-    int w = recordConfig->video_in_width;
-    int h = recordConfig->video_in_height;
-
-    uint8_t *dstI420 = (uint8_t *) malloc(w * h * 3 / 2);
-
-    NV21ToI420(picture_buf,               w,
-               picture_buf + (w * h),     w,
-               dstI420,                   w,
-               dstI420 + (w * h),         w / 2,
-               dstI420 + (w * h * 5 / 4), w / 2,
-               w, h);
-
-    uint8_t *rotate = (uint8_t *) malloc(w * h * 3 / 2);
-
-    I420Rotate(dstI420,                      w,
-               dstI420 + w * h,              w / 2,
-               dstI420 + (w * h * 5 / 4),    w / 2,
-               rotate,                       h,
-               rotate + (w * h),             h / 2,
-               rotate + (w * h * 5 / 4),     h / 2,
-               w, h,
-               kRotate270);
-
-    uint8_t *mirror = (uint8_t *) malloc(w * h * 3 / 2);
-
-    I420Mirror(rotate,                      w,
-               rotate + w * h,              w / 2,
-               rotate + (w * h * 5 / 4),    w / 2,
-               mirror,                      w,
-               mirror + (w * h),            w / 2,
-               mirror + (w * h * 5 / 4),    w / 2,
-               w, h);
-
     av_image_fill_arrays(pFrame->data,
-                         pFrame->linesize, rotate,
+                         pFrame->linesize, data->data,
                          AV_PIX_FMT_YUV420P, pCodecCtx->width,
                          pCodecCtx->height, 1);
 
@@ -267,21 +241,11 @@ int H264Encoder::startEncodeForRtmp(FrameData *data) {
     if (ret < 0) {
         LOGE("Fail encode video!");
     }
-    if (mirror) {
-        delete(mirror);
-    }
-
-    if (rotate) {
-        delete(rotate);
-    }
 
     if (data->data) {
         delete(data->data);
     }
 
-    if (dstI420) {
-        delete(dstI420);
-    }
     data->avPacket = &pkt;
     return pkt.size;
 }

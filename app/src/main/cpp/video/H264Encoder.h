@@ -71,7 +71,7 @@ public:
 
     void endEncoder();
 
-    int pushOneFrame(uint8_t* frame);
+    int pushOneFrame(uint8_t* frame, int length);
 
     void userStop();
 
@@ -81,7 +81,7 @@ public:
 
     static void* startLoopEncodeInThread(void* obj);
 
-    int startEncodeForRtmp(FrameData *data);
+    int startEncodeForRTMP(FrameData *data);
 };
 
 

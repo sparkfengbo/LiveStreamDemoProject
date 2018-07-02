@@ -1,9 +1,9 @@
 package com.sparkfengbo.ng.livestreamdemoproject.avtivity;
 
-import com.sparkfengbo.ng.livestreamdemoproject.CameraPreview;
+import com.sparkfengbo.ng.livestreamdemoproject.base.CameraPreview;
 import com.sparkfengbo.ng.livestreamdemoproject.R;
-import com.sparkfengbo.ng.livestreamdemoproject.RecorderManager;
-import com.sparkfengbo.ng.livestreamdemoproject.util.Mog;
+import com.sparkfengbo.ng.livestreamdemoproject.recorder.RecorderManager;
+import com.sparkfengbo.ng.livestreamdemoproject.util.FLog;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -148,12 +148,12 @@ public class PreviewActivity extends Activity {
                 final String dest = "test.gif";
                 File file = new File(path);
                 if (!file.exists()) {
-                    Mog.e("File path = " + path + " not  exits");
+                    FLog.e("File path = " + path + " not  exits");
                     return;
                 }
                 final String cmd = "ffmpeg -i " + path + source + " -vframes 100 -y -f gif -s 480×320 " + path + dest;
                 int a  = mRecorderManager.cmdRun(cmd);
-                Mog.i("执行命令" + a + "");
+                FLog.i("执行命令" + a + "");
             } else if (view == mBtnRtmp) {
                 mRecorderManager.startPushRtmp();
             }

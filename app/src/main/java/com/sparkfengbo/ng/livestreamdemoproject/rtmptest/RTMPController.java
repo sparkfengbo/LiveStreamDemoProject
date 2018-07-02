@@ -1,8 +1,8 @@
-package com.sparkfengbo.ng.livestreamdemoproject;
+package com.sparkfengbo.ng.livestreamdemoproject.rtmptest;
 
-import com.sparkfengbo.ng.livestreamdemoproject.nativehandler.NativeCrashHandler;
+import com.sparkfengbo.ng.livestreamdemoproject.base.CameraPreview;
 import com.sparkfengbo.ng.livestreamdemoproject.recorder.AudioRecorder;
-import com.sparkfengbo.ng.livestreamdemoproject.util.Mog;
+import com.sparkfengbo.ng.livestreamdemoproject.util.FLog;
 
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -12,7 +12,7 @@ import android.os.Message;
  * Created by fengbo on 2018/6/27.
  */
 
-public class RtmpController {
+public class RTMPController {
 
     static {
         System.loadLibrary("fdk-aac");
@@ -40,8 +40,9 @@ public class RtmpController {
         public boolean handleMessage(Message message) {
             if (message != null && message.what == MSG_CAMERA_FRAME_DATA) {
                 if (message.obj instanceof byte[]) {
-                    Mog.i("Camera Handler Thread receive : " + ((byte[]) message.obj).length);
-                    nativePushYUVData((byte[]) message.obj);
+                    FLog.i("Camera Handler Thread receive : " + ((byte[]) message.obj).length);
+                    byte[] data = (byte[]) message.obj;
+                    nativePushYUVData(data, data.length);
                 }
                 return true;
             }
@@ -49,7 +50,7 @@ public class RtmpController {
         }
     };
 
-    public RtmpController(CameraPreview cameraRecorder) {
+    public RTMPController(CameraPreview cameraRecorder) {
         if (cameraRecorder == null) {
             throw new NullPointerException("Recorder Manager must init with NOT-NULL CameraPreview");
         }
@@ -64,7 +65,7 @@ public class RtmpController {
                     msg.obj = data;
                     msg.arg1 = length;
                     msg.arg2 = rotate;
-                    Mog.i("" + data.length);
+                    FLog.i("" + data.length);
                     mCameraDataHandler.sendMessage(msg);
                 }
             }
@@ -84,7 +85,7 @@ public class RtmpController {
         try {
             boolean isSuccess = nativeStartPush(rtmpUrl);
             if (!isSuccess) {
-                Mog.e("start push failed!");
+                FLog.e("start push failed!");
                 return false;
             }
         } catch (Exception ex) {
@@ -106,7 +107,7 @@ public class RtmpController {
         }
 
 
-        Mog.i("start push...");
+        FLog.i("start push...");
         return true;
     }
 
@@ -150,22 +151,22 @@ public class RtmpController {
                 return;
             }
             boolean isStart = mAudioRecorder.startRecord();
-            Mog.i("AudioRecordThread isStart : "  + isStart);
+            FLog.i("AudioRecordThread isStart : "  + isStart);
             if (!isStart) {
                 return;
             } else {
-                Mog.i("attemp read  audio data");
+                FLog.i("attemp read  audio data");
                 while (true) {
                     byte[] audioData = mAudioRecorder.readData();
                     if (audioData != null) {
                         nativePushPCMData(audioData);
                     } else {
-                        Mog.e("receive audioData empty");
+                        FLog.e("receive audioData empty");
                     }
                     try {
                         Thread.sleep(40);
                     } catch (InterruptedException e) {
-                        Mog.e("audio thread can not sleep");
+                        FLog.e("audio thread can not sleep");
                         e.printStackTrace();
                     }
                 }
@@ -188,5 +189,5 @@ public class RtmpController {
 
     private native long nativePushPCMData(byte[] data);
 
-    private native long nativePushYUVData(byte[] data);
+    private native long nativePushYUVData(byte[] data, int length);
 }

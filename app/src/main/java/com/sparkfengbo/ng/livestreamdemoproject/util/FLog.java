@@ -6,7 +6,7 @@ import android.util.Log;
  * Created by fengbo on 2017/7/31.
  */
 
-public class Mog {
+public class FLog {
     private static String TAG = "fengbo";
 
     public static void i(String arg) {
@@ -19,6 +19,10 @@ public class Mog {
 
     public static void e(String arg) {
         Log.e(TAG, generateStackTrace() + " : " +arg);
+    }
+
+    public static void v(String arg) {
+        Log.v(TAG, generateStackTrace() + " : " +arg);
     }
 
     private static String generateStackTrace() {
@@ -38,4 +42,6 @@ public class Mog {
         fullMsg.append(className);
         return fullMsg.toString();
     }
+
+
 }

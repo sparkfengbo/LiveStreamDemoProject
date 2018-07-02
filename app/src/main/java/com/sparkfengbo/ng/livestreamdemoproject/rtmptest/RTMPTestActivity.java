@@ -1,9 +1,7 @@
 package com.sparkfengbo.ng.livestreamdemoproject.rtmptest;
 
-import com.sparkfengbo.ng.livestreamdemoproject.CameraPreview;
+import com.sparkfengbo.ng.livestreamdemoproject.base.CameraPreview;
 import com.sparkfengbo.ng.livestreamdemoproject.R;
-import com.sparkfengbo.ng.livestreamdemoproject.RecorderManager;
-import com.sparkfengbo.ng.livestreamdemoproject.RtmpController;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -14,18 +12,29 @@ import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.Toast;
 
-public class RtmpTestActivity extends Activity {
-    /**
-     * 摄像头预览和采集
-     */
+/**
+ * 使用ffmepg进行rtmp推流
+ *
+ * 主要使用RTMPTestActivity进行测试
+ *
+ * 功能包括：
+ *
+ * 1.使用FFMEPG进行推流
+ * 2....
+ */
+public class RTMPTestActivity extends Activity {
     private CameraPreview mCameraRecorder;
 
-    private RtmpController mRtmpController;
+    private RTMPController mRtmpController;
 
     private EditText mEditText;
     private Switch mSwitchPush;
     private Switch mSwitchLight;
     private Switch mSwitchCamera;
+    private Switch mSwitchFaceDetect;
+    private Switch mSwitchFilter;
+
+    private boolean mIsRTMPPushing;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,24 +47,37 @@ public class RtmpTestActivity extends Activity {
         mSwitchLight = (Switch) findViewById(R.id.swFlash);
         mSwitchPush = (Switch) findViewById(R.id.sw_push_rtmp);
         mSwitchCamera = (Switch) findViewById(R.id.swCamera);
+        mSwitchFaceDetect = (Switch) findViewById(R.id.swFaceDetect);
+        mSwitchFilter = (Switch) findViewById(R.id.swFilter);
         mCameraRecorder = (CameraPreview) findViewById(R.id.camera_preview);
         mEditText = (EditText) findViewById(R.id.et_rtmp_url);
-        mRtmpController = new RtmpController(mCameraRecorder);
+        mRtmpController = new RTMPController(mCameraRecorder);
+
         mSwitchPush.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    if (!mEditText.getText().equals("") && !mRtmpController.startPush(mEditText.getText().toString())) {
+                    if (mIsRTMPPushing) {
+                        Toast.makeText(getApplicationContext(), "正在推流！", Toast.LENGTH_SHORT).show();
                         mSwitchPush.setChecked(false);
-                        Toast.makeText(getApplicationContext(), "推流失败！", Toast.LENGTH_SHORT).show();
+                    } else {
+                        if (!mEditText.getText().equals("")) {
+                            boolean isSuccess = mRtmpController.startPush(mEditText.getText().toString());
+                            if (isSuccess) {
+                                mIsRTMPPushing = true;
+                            } else {
+                                mIsRTMPPushing = false;
+                                mSwitchPush.setChecked(false);
+                                Toast.makeText(getApplicationContext(), "推流失败！", Toast.LENGTH_SHORT).show();
+                            }
+                        }
                     }
                 }
             }
         });
 
-
-        //TODO 更改rtmp地址
-        mEditText.setText("rtmp://172.22.126.42:1935/test/live");
+        //TODO 更改rtmp地址（确保测试手机和PC上的nginx服务器在同一网络）
+        mEditText.setText("rtmp://172.22.126.110:1935/test/live");
     }
 
     @Override
