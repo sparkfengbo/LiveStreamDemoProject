@@ -72,12 +72,14 @@ public class RTMPTestActivity extends Activity {
                             }
                         }
                     }
+                } else {
+                    mRtmpController.stopPush();
                 }
             }
         });
 
-        //TODO 更改rtmp地址（确保测试手机和PC上的nginx服务器在同一网络）
-        mEditText.setText("rtmp://172.22.126.110:1935/test/live");
+        //TODO 更改rtmp地址（确保测试手机和PC上的nginx服务器在同一网络,否则RTMP不通并且会crash）
+        mEditText.setText("rtmp://172.22.127.122:1935/test/live");
     }
 
     @Override

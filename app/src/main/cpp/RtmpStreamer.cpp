@@ -261,6 +261,7 @@ int RtmpStreamer::pushFrame(FrameData *data, int streamIndex) {
         }
     }
 
+//    av_packet_unref(packet);
     free(data);
     return 0;
 }

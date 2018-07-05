@@ -122,6 +122,11 @@ int H264Encoder::pushOneFrame(uint8_t *frame, int length) {
     int w = recordConfig->video_in_width;
     int h = recordConfig->video_in_height;
 
+    /**
+     * 这里的计算可以参考一下 https://blog.csdn.net/licui1000/article/details/54138768
+     *
+     * 会好理解一些
+     */
     uint8_t *dstI420 = (uint8_t *) malloc(w * h * 3 / 2);
 
     NV21ToI420(new_buf,                      w,

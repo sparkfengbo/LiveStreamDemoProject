@@ -115,7 +115,10 @@ public class RTMPController {
      * 暂停推流
      */
     public void pausePush() {
-
+        /**
+         * TODO 暂停推流
+         * TODO 需要处理 和 url 断开连接和重连的问题
+         */
     }
 
     /**
@@ -129,7 +132,10 @@ public class RTMPController {
      * 停止推流
      */
     public void stopPush() {
-
+        //
+        /**
+         * TODO 停止推流
+         */
     }
 
     public void release () {
@@ -190,4 +196,14 @@ public class RTMPController {
     private native long nativePushPCMData(byte[] data);
 
     private native long nativePushYUVData(byte[] data, int length);
+
+
+    /**
+     * TODO 添加JNI层对Java层的回调，用于通知JNI对RTMP处理信息的回调
+     * @param info
+     * @param ret
+     */
+    private void onNativePushInfoCallback(String info, int ret) {
+
+    }
 }
