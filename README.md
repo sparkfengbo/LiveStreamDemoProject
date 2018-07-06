@@ -1,9 +1,30 @@
 
 
-
 **本demo是基于ffmpeg、x264、rtmp库，编译并移植到android中，完成能够进行直播的demo，通过本demo及相关的文档，你能学习到直播所需的基础知识**
 
+Demo 参考了若干库，包括：
 
+- [small-video-record](https://github.com/mabeijianxi/small-video-record)
+- [MediaPlus](https://github.com/javandoc/MediaPlus)
+- [libyuv-android](https://github.com/illuspas/libyuv-android)
+- [dlib-android-app](https://github.com/tzutalin/dlib-android-app)
+
+
+**目前已经完成的功能：**
+
+- [x] 音视频编码
+- [x] RTMP推流
+
+**尚未完成的功能：**
+
+- [ ] dlib人脸识别
+- [ ] 人脸识别贴图
+- [ ] OpenGL雪花飘落
+- [ ] 添加滤镜
+- [ ] 完善各功能
+
+
+## 初次编码时的步骤
 
 ### 步骤1：下载
 
