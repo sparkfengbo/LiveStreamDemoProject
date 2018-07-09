@@ -2,12 +2,13 @@
 
 **本demo是基于ffmpeg、x264、rtmp库，编译并移植到android中，完成能够进行直播的demo，通过本demo及相关的文档，你能学习到直播所需的基础知识**
 
-Demo 参考了若干库，包括：
+Demo 参考了一些库，都是很好的学习资料，推荐给大家，包括：
 
 - [small-video-record](https://github.com/mabeijianxi/small-video-record)
 - [MediaPlus](https://github.com/javandoc/MediaPlus)
 - [libyuv-android](https://github.com/illuspas/libyuv-android)
 - [dlib-android-app](https://github.com/tzutalin/dlib-android-app)
+- [xufuji456/FFmpegAndroid](https://github.com/xufuji456/FFmpegAndroid)
 
 **测试环境**
 
