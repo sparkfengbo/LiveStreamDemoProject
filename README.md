@@ -9,6 +9,9 @@ Demo 参考了若干库，包括：
 - [libyuv-android](https://github.com/illuspas/libyuv-android)
 - [dlib-android-app](https://github.com/tzutalin/dlib-android-app)
 
+**测试环境**
+
+坚果Pro2、MAC VLC播放器
 
 **目前已经完成的功能：**
 
